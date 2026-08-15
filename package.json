@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "workspaces": [
     "shared",
-    "agent"
+    "agent",
+    "mobile"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
