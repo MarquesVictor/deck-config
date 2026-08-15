@@ -1,3 +1,4 @@
+import { networkInterfaces } from "node:os";
 import { ActionRegistry } from "./core/actions";
 import { createOpenAppHandler } from "./core/actions/openApp";
 import { JsonConfigStore } from "./core/persistence/jsonConfigStore";
@@ -31,6 +32,9 @@ async function main(): Promise<void> {
 
   const mdns = advertiseAgent(config.machine.id, config.machine.name, server.port, logger);
 
+  for (const address of localIPv4Addresses()) {
+    logger.info(`Reachable at ${address}:${server.port} (for manual connection on mobile)`);
+  }
   logger.info("Ready for connections");
 
   const shutdown = async () => {
@@ -41,6 +45,18 @@ async function main(): Promise<void> {
   };
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
+}
+
+function localIPv4Addresses(): string[] {
+  const addresses: string[] = [];
+  for (const iface of Object.values(networkInterfaces())) {
+    for (const info of iface ?? []) {
+      if (info.family === "IPv4" && !info.internal) {
+        addresses.push(info.address);
+      }
+    }
+  }
+  return addresses;
 }
 
 main().catch((err) => {

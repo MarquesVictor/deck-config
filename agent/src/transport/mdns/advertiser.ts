@@ -28,6 +28,12 @@ export function advertiseAgent(
     },
   });
 
+  // Without a listener, an 'error' event on an EventEmitter (e.g. a name
+  // conflict detected during probing) throws and crashes the process.
+  service.on("error", (err: Error) => {
+    logger.warn(`mDNS advertisement error: ${err.message}`);
+  });
+
   service.start();
   logger.info(`mDNS registered: _${SERVICE_TYPE}._tcp`);
 
