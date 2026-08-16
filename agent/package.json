@@ -8,20 +8,39 @@
     "add-app": "tsx src/cli/addApp.ts",
     "start": "node dist/index.js",
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p src/ui/electron/renderer/tsconfig.json",
+    "test": "vitest run",
+    "electron:renderer:dev": "vite --config src/ui/electron/renderer/vite.config.ts",
+    "electron:renderer:build": "vite build --config src/ui/electron/renderer/vite.config.ts",
+    "electron:main:build": "tsc -p tsconfig.json && npm run electron:copy-assets",
+    "electron:copy-assets": "node -e \"require('fs').cpSync('src/ui/electron/assets','dist/ui/electron/assets',{recursive:true})\"",
+    "electron:main:watch": "tsc -p tsconfig.json --watch --preserveWatchOutput",
+    "electron:dev": "npm run electron:copy-assets && concurrently -k -n renderer,main,app -c blue,green,magenta \"npm run electron:renderer:dev\" \"npm run electron:main:watch\" \"wait-on tcp:5173 dist/ui/electron/main.js && cross-env NODE_ENV=development electron dist/ui/electron/main.js\"",
+    "electron:build": "npm run electron:renderer:build && npm run electron:main:build",
+    "electron:pack": "npm run electron:build && electron-builder"
   },
   "dependencies": {
     "@stream-deck/shared": "*",
     "bonjour-service": "^1.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "ws": "^8.18.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "@types/ws": "^8.5.12",
+    "@vitejs/plugin-react": "^6.0.5",
+    "concurrently": "^9.2.4",
+    "cross-env": "^10.1.0",
+    "electron": "^33.4.11",
+    "electron-builder": "^26.15.3",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4",
-    "vitest": "^2.0.5"
+    "vite": "^8.2.1",
+    "vitest": "^2.0.5",
+    "wait-on": "^9.1.0"
   }
 }

@@ -8,9 +8,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import type { AppSummary } from "@stream-deck/shared";
+import { iconFor, type AppSummary } from "@stream-deck/shared";
 import type { AgentClient, AgentInfo, ConnectionStatus } from "../services/websocketClient";
-import { iconFor } from "../icons";
 
 type ButtonState = "idle" | "loading" | "success" | "error";
 

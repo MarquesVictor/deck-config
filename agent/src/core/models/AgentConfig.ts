@@ -11,6 +11,7 @@ export type AgentIdentity = z.infer<typeof AgentIdentitySchema>;
 export const AgentSettingsSchema = z.object({
   autoStartWindows: z.boolean(),
   startMinimized: z.boolean(),
+  showInTray: z.boolean().default(true),
   logLevel: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]),
 });
 export type AgentSettings = z.infer<typeof AgentSettingsSchema>;
@@ -36,6 +37,7 @@ export function createDefaultConfig(machineName: string): AgentConfig {
     settings: {
       autoStartWindows: true,
       startMinimized: true,
+      showInTray: true,
       logLevel: "info",
     },
   };
