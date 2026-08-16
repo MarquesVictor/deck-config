@@ -27,7 +27,17 @@ async function createWindow(startHidden: boolean): Promise<void> {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
+      // The sandboxed preload loader has historically had rough edges with
+      // a preload script that itself requires another local CJS file (our
+      // ./ipc.js). This is still our own trusted local UI, not remote
+      // content, so disabling the renderer sandbox is a safe trade for a
+      // preload that reliably loads.
+      sandbox: false,
     },
+  });
+
+  mainWindow.webContents.on("preload-error", (_e, preloadPath, error) => {
+    console.error(`[preload] failed to load ${preloadPath}: ${error.message}\n${error.stack}`);
   });
 
   if (!app.isPackaged) {
