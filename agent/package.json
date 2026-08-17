@@ -7,7 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "add-app": "tsx src/cli/addApp.ts",
     "start": "node dist/index.js",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && npm run electron:copy-assets",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src/ui/electron/renderer/tsconfig.json",
     "test": "vitest run",
     "electron:renderer:dev": "vite --config src/ui/electron/renderer/vite.config.ts",

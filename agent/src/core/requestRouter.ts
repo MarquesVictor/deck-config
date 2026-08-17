@@ -1,6 +1,7 @@
 import {
   ActionErrorCode,
   ExecutePayloadSchema,
+  MediaControlPayloadSchema,
   ProtocolError,
   toAppSummary,
   type RequestMessage,
@@ -21,6 +22,8 @@ export class RequestRouter {
         return this.handleGetApps();
       case "execute":
         return this.handleExecute(request.payload);
+      case "media_control":
+        return this.handleMediaControl(request.payload);
       default: {
         const exhaustive: never = request.action;
         throw new ProtocolError(ActionErrorCode.INVALID_ACTION, `Unknown action: ${exhaustive}`);
@@ -46,5 +49,10 @@ export class RequestRouter {
       );
     }
     await this.actionRegistry.execute(app.action.type, rawPayload);
+  }
+
+  private async handleMediaControl(rawPayload: unknown): Promise<void> {
+    const { command } = MediaControlPayloadSchema.parse(rawPayload);
+    await this.actionRegistry.execute(command, rawPayload);
   }
 }

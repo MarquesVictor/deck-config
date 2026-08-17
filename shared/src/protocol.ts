@@ -8,13 +8,34 @@ import { ActionErrorCode } from "./errors";
  */
 export const CURRENT_PROTOCOL_VERSION = 1;
 
-export const RequestActionSchema = z.enum(["get_apps", "execute"]);
+export const RequestActionSchema = z.enum(["get_apps", "execute", "media_control"]);
 export type RequestAction = z.infer<typeof RequestActionSchema>;
 
 export const ExecutePayloadSchema = z.object({
   appId: z.string().min(1),
 });
 export type ExecutePayload = z.infer<typeof ExecutePayloadSchema>;
+
+/**
+ * Direct system commands with no associated configured app — unlike
+ * `execute`, there's no appId/path lookup involved, just a fixed command
+ * name the Agent maps straight to a platform-specific handler.
+ */
+export const MediaCommandSchema = z.enum([
+  "volume_up",
+  "volume_down",
+  "volume_mute",
+  "media_previous",
+  "media_play_pause",
+  "media_next",
+  "mic_mute",
+]);
+export type MediaCommand = z.infer<typeof MediaCommandSchema>;
+
+export const MediaControlPayloadSchema = z.object({
+  command: MediaCommandSchema,
+});
+export type MediaControlPayload = z.infer<typeof MediaControlPayloadSchema>;
 
 export const RequestMessageSchema = z.object({
   protocolVersion: z.number().int().positive(),

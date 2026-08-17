@@ -13,6 +13,7 @@ import {
 import { iconFor, type AppSummary } from "@stream-deck/shared";
 import type { AgentClient, ConnectionStatus } from "../services/websocketClient";
 import { colors, statusDotColor } from "../theme";
+import { MediaBar } from "../components/MediaBar";
 
 type ButtonState = "idle" | "loading" | "success" | "error";
 
@@ -109,29 +110,34 @@ export function ControlScreen({ client, displayName, paused, onLongPressHeader }
         </View>
       )}
 
-      {loadingApps ? (
-        <ActivityIndicator style={styles.loading} color={colors.accent} />
-      ) : apps.length === 0 ? (
-        <Text style={styles.empty}>
-          Nenhum aplicativo configurado ainda.{"\n"}Adicione um pelo Stream Deck Agent no computador.
-        </Text>
-      ) : (
-        <FlatList
-          key={columns}
-          data={apps}
-          numColumns={columns}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.grid}
-          renderItem={({ item }) => (
-            <AppButton
-              app={item}
-              state={buttonStates[item.id] ?? "idle"}
-              disabled={status !== "connected"}
-              onPress={() => handlePress(item)}
-            />
-          )}
-        />
-      )}
+      <View style={styles.appsArea}>
+        {loadingApps ? (
+          <ActivityIndicator style={styles.loading} color={colors.accent} />
+        ) : apps.length === 0 ? (
+          <Text style={styles.empty}>
+            Nenhum aplicativo configurado ainda.{"\n"}Adicione um pelo Stream Deck Agent no computador.
+          </Text>
+        ) : (
+          <FlatList
+            style={styles.appsArea}
+            key={columns}
+            data={apps}
+            numColumns={columns}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.grid}
+            renderItem={({ item }) => (
+              <AppButton
+                app={item}
+                state={buttonStates[item.id] ?? "idle"}
+                disabled={status !== "connected"}
+                onPress={() => handlePress(item)}
+              />
+            )}
+          />
+        )}
+      </View>
+
+      <MediaBar client={client} disabled={status !== "connected"} />
     </View>
   );
 }
@@ -235,6 +241,9 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontWeight: "600",
     fontSize: 13,
+  },
+  appsArea: {
+    flex: 1,
   },
   loading: {
     marginTop: 40,
