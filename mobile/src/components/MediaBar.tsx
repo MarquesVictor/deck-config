@@ -76,11 +76,17 @@ export function MediaBar({ client, disabled }: Props) {
   };
 
   const handleSlideComplete = async (value: number) => {
+    const rounded = Math.round(value);
+    // Reflect the released value in volumeState in the same tick as clearing
+    // dragValue, so `shownVolume` never falls back to the stale pre-drag
+    // number while the request is still in flight — that gap was making the
+    // thumb visibly snap back and then jump forward once the response
+    // landed.
+    setVolumeState((prev) => (prev ? { ...prev, volume: rounded } : { volume: rounded, muted: false }));
     setDragValue(null);
     if (disabled) return;
     try {
-      await client.request("set_volume", { volume: Math.round(value) });
-      setVolumeState((prev) => (prev ? { ...prev, volume: Math.round(value) } : prev));
+      await client.request("set_volume", { volume: rounded });
     } catch {
       flashError("volume_up");
       refreshVolume();
