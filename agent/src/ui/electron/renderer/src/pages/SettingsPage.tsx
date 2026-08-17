@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { AgentSettings, MachineInfo } from "../../../ipc";
+import { Select } from "../components/Select";
 
 interface Props {
   notify: (text: string, kind?: "success" | "error") => void;
@@ -84,13 +85,11 @@ export function SettingsPage({ notify }: Props) {
             <div className="settings-row-label">Nível</div>
             <div className="settings-row-desc">Quanto mais baixo, mais detalhado.</div>
           </div>
-          <select value={settings.logLevel} onChange={(e) => update({ logLevel: e.target.value as AgentSettings["logLevel"] })}>
-            {LOG_LEVELS.map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={settings.logLevel}
+            options={LOG_LEVELS.map((level) => ({ value: level, label: level }))}
+            onChange={(level) => update({ logLevel: level })}
+          />
         </div>
       </div>
     </>

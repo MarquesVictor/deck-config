@@ -87,6 +87,7 @@ select {
   text-align: left;
   cursor: pointer;
   font-size: 13.5px;
+  transition: background-color 0.12s ease, color 0.12s ease;
 }
 
 .nav-item:hover {
@@ -125,6 +126,7 @@ select {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 8px 20px -12px rgba(0, 0, 0, 0.35);
 }
 
 .card + .card {
@@ -143,6 +145,7 @@ select {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px 18px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 8px 20px -12px rgba(0, 0, 0, 0.35);
 }
 
 .stat-label {
@@ -188,6 +191,7 @@ select {
   background: var(--surface-raised);
   color: var(--text);
   border: 1px solid var(--border);
+  transition: border-color 0.12s ease, background-color 0.12s ease, opacity 0.12s ease;
 }
 
 .btn:hover {
@@ -232,6 +236,7 @@ select {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  transition: border-color 0.12s ease;
 }
 
 .app-row.dragging {
@@ -327,6 +332,7 @@ select {
   border-radius: 8px;
   padding: 9px 12px;
   color: var(--text);
+  transition: border-color 0.12s ease;
 }
 
 .form-field input:focus,
@@ -367,6 +373,11 @@ select {
   border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.icon-option:hover {
+  border-color: var(--text-faint);
 }
 
 .icon-option.selected {
@@ -441,6 +452,7 @@ select {
   border: 1px solid var(--border);
   border-radius: 999px;
   cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .switch.on {
@@ -461,6 +473,82 @@ select {
 
 .switch.on .switch-knob {
   transform: translateX(18px);
+}
+
+.select {
+  position: relative;
+}
+
+.select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 120px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px 8px 12px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+
+.select-trigger:hover {
+  border-color: var(--text-faint);
+}
+
+.select-trigger[aria-expanded="true"] {
+  border-color: var(--purple);
+}
+
+.select-chevron {
+  flex: none;
+  color: var(--text-faint);
+  transition: transform 0.15s ease;
+}
+
+.select-trigger[aria-expanded="true"] .select-chevron {
+  transform: rotate(180deg);
+}
+
+.select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 100%;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  z-index: 20;
+}
+
+.select-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.select-option:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.select-option.selected {
+  color: var(--purple);
+  font-weight: 600;
 }
 
 .connect-hint {
