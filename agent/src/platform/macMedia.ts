@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import type { MediaCommand } from "@stream-deck/shared";
+import type { MediaCommand, VolumeState } from "@stream-deck/shared";
 
 const execFileAsync = promisify(execFile);
 const VOLUME_STEP = 10;
@@ -106,4 +106,17 @@ export async function runMacMediaCommand(command: MediaCommand): Promise<void> {
       await runMediaTransportCommand("next track");
       return;
   }
+}
+
+export async function getMacVolume(): Promise<VolumeState> {
+  const [volumeStr, mutedStr] = await Promise.all([
+    runAppleScript("output volume of (get volume settings)"),
+    runAppleScript("output muted of (get volume settings)"),
+  ]);
+  return { volume: Number(volumeStr), muted: mutedStr === "true" };
+}
+
+export async function setMacVolume(volume: number): Promise<void> {
+  const clamped = Math.max(0, Math.min(100, Math.round(volume)));
+  await runAppleScript(`set volume output volume ${clamped}`);
 }

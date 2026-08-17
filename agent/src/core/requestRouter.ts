@@ -3,9 +3,11 @@ import {
   ExecutePayloadSchema,
   MediaControlPayloadSchema,
   ProtocolError,
+  SetVolumePayloadSchema,
   toAppSummary,
   type RequestMessage,
 } from "@stream-deck/shared";
+import { getVolumeState, setVolumeLevel } from "./actions/mediaControl";
 import type { IConfigStore } from "./persistence/configStore";
 import type { ActionRegistry } from "./actions";
 
@@ -24,6 +26,10 @@ export class RequestRouter {
         return this.handleExecute(request.payload);
       case "media_control":
         return this.handleMediaControl(request.payload);
+      case "get_volume":
+        return getVolumeState();
+      case "set_volume":
+        return this.handleSetVolume(request.payload);
       default: {
         const exhaustive: never = request.action;
         throw new ProtocolError(ActionErrorCode.INVALID_ACTION, `Unknown action: ${exhaustive}`);
@@ -54,5 +60,10 @@ export class RequestRouter {
   private async handleMediaControl(rawPayload: unknown): Promise<void> {
     const { command } = MediaControlPayloadSchema.parse(rawPayload);
     await this.actionRegistry.execute(command, rawPayload);
+  }
+
+  private async handleSetVolume(rawPayload: unknown): Promise<void> {
+    const { volume } = SetVolumePayloadSchema.parse(rawPayload);
+    await setVolumeLevel(volume);
   }
 }

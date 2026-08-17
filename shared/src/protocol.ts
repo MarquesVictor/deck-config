@@ -8,7 +8,7 @@ import { ActionErrorCode } from "./errors";
  */
 export const CURRENT_PROTOCOL_VERSION = 1;
 
-export const RequestActionSchema = z.enum(["get_apps", "execute", "media_control"]);
+export const RequestActionSchema = z.enum(["get_apps", "execute", "media_control", "get_volume", "set_volume"]);
 export type RequestAction = z.infer<typeof RequestActionSchema>;
 
 export const ExecutePayloadSchema = z.object({
@@ -36,6 +36,19 @@ export const MediaControlPayloadSchema = z.object({
   command: MediaCommandSchema,
 });
 export type MediaControlPayload = z.infer<typeof MediaControlPayloadSchema>;
+
+/** `get_volume` response data. */
+export const VolumeStateSchema = z.object({
+  volume: z.number().min(0).max(100),
+  muted: z.boolean(),
+});
+export type VolumeState = z.infer<typeof VolumeStateSchema>;
+
+/** `set_volume` payload — an absolute level, not a relative nudge. */
+export const SetVolumePayloadSchema = z.object({
+  volume: z.number().min(0).max(100),
+});
+export type SetVolumePayload = z.infer<typeof SetVolumePayloadSchema>;
 
 export const RequestMessageSchema = z.object({
   protocolVersion: z.number().int().positive(),

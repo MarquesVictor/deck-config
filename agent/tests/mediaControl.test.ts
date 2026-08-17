@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { MediaControlPayloadSchema, ProtocolError } from "@stream-deck/shared";
 import { ActionRegistry } from "../src/core/actions";
 import { registerMediaControlActions } from "../src/core/actions/mediaControl";
+import { getMacVolume, setMacVolume } from "../src/platform/macMedia";
 import { RequestRouter } from "../src/core/requestRouter";
 import type { IConfigStore } from "../src/core/persistence/configStore";
 
@@ -122,5 +123,71 @@ describe.runIf(process.platform === "darwin")("media_control on macOS (real syst
 
     await expect(registry.execute("media_next", { command: "media_next" })).resolves.toBeUndefined();
     await expect(registry.execute("media_previous", { command: "media_previous" })).resolves.toBeUndefined();
+  });
+});
+
+describe.runIf(process.platform === "darwin")("get_volume / set_volume on macOS (real system effect)", () => {
+  it("setMacVolume sets an exact level, getMacVolume reads it back", async () => {
+    const before = await getMacVolume();
+    try {
+      await setMacVolume(37);
+      expect(await getMacVolume()).toMatchObject({ volume: 37 });
+
+      await setMacVolume(150); // clamps above range
+      expect(await getMacVolume()).toMatchObject({ volume: 100 });
+
+      await setMacVolume(-20); // clamps below range
+      expect(await getMacVolume()).toMatchObject({ volume: 0 });
+    } finally {
+      await setMacVolume(before.volume);
+    }
+  });
+
+  it("router dispatches get_volume/set_volume end to end", async () => {
+    const registry = new ActionRegistry();
+    registerMediaControlActions(registry);
+    const router = new RequestRouter(unusedConfigStore, registry);
+    const before = await getMacVolume();
+
+    try {
+      const setResult = await router.handle({
+        protocolVersion: 1,
+        type: "request",
+        requestId: "req_3",
+        machineId: "machine_x",
+        action: "set_volume",
+        payload: { volume: 62 },
+      });
+      expect(setResult).toBeUndefined();
+
+      const getResult = await router.handle({
+        protocolVersion: 1,
+        type: "request",
+        requestId: "req_4",
+        machineId: "machine_x",
+        action: "get_volume",
+        payload: undefined,
+      });
+      expect(getResult).toMatchObject({ volume: 62 });
+    } finally {
+      await setMacVolume(before.volume);
+    }
+  });
+
+  it("set_volume rejects an out-of-range payload before touching the OS", async () => {
+    const registry = new ActionRegistry();
+    registerMediaControlActions(registry);
+    const router = new RequestRouter(unusedConfigStore, registry);
+
+    await expect(
+      router.handle({
+        protocolVersion: 1,
+        type: "request",
+        requestId: "req_5",
+        machineId: "machine_x",
+        action: "set_volume",
+        payload: { volume: 200 },
+      }),
+    ).rejects.toThrow();
   });
 });
