@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { iconFor, type App } from "@stream-deck/shared";
 import type { AppInput } from "../../../ipc";
 import { AppForm } from "../components/AppForm";
@@ -15,6 +15,11 @@ export function AppsPage({ notify }: Props) {
   const [editing, setEditing] = useState<EditingState>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+  // dragstart's e.target is always the draggable row itself in Chromium,
+  // never the inner handle span, so "did this drag start from the handle"
+  // has to be tracked via mousedown on the handle instead of e.target.
+  const dragAllowedRef = useRef(false);
 
   const refresh = () => window.streamDeck.listApps().then(setApps);
 
@@ -60,32 +65,46 @@ export function AppsPage({ notify }: Props) {
   const editingApp = editing && editing !== "new" ? apps.find((a) => a.id === editing.id) : undefined;
 
   const handleDragStart = (e: React.DragEvent, app: App) => {
-    if (!(e.target as HTMLElement).closest(".drag-handle")) {
+    if (!dragAllowedRef.current) {
       e.preventDefault();
       return;
     }
     setDraggingId(app.id);
     e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", app.id);
   };
 
   const handleDragOver = (e: React.DragEvent, overApp: App) => {
+    // Always preventDefault here, even over the dragged row itself — the
+    // browser only fires "drop" on elements where dragover opted in.
     e.preventDefault();
-    if (!draggingId || draggingId === overApp.id) return;
-
-    setApps((prev) => {
-      const from = prev.findIndex((a) => a.id === draggingId);
-      const to = prev.findIndex((a) => a.id === overApp.id);
-      if (from === -1 || to === -1) return prev;
-      const next = [...prev];
-      const [moved] = next.splice(from, 1);
-      next.splice(to, 0, moved!);
-      return next;
-    });
+    e.dataTransfer.dropEffect = "move";
+    if (draggingId && draggingId !== overApp.id) setOverId(overApp.id);
   };
 
-  const handleDragEnd = async () => {
+  // Reordering happens on drop, not live during dragover: moving DOM nodes
+  // mid-drag (via a state update while the row under the pointer is still
+  // part of an active native drag gesture) confuses the browser's drag
+  // tracking and the UI stops responding to further dragover events.
+  const handleDrop = async (e: React.DragEvent, overApp: App) => {
+    e.preventDefault();
+    setOverId(null);
+    const from = apps.findIndex((a) => a.id === draggingId);
+    const to = apps.findIndex((a) => a.id === overApp.id);
     setDraggingId(null);
-    await window.streamDeck.reorderApps(apps.map((a) => a.id));
+    if (from === -1 || to === -1 || from === to) return;
+
+    const next = [...apps];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved!);
+    setApps(next);
+    await window.streamDeck.reorderApps(next.map((a) => a.id));
+  };
+
+  const handleDragEnd = () => {
+    dragAllowedRef.current = false;
+    setDraggingId(null);
+    setOverId(null);
   };
 
   return (
@@ -127,13 +146,20 @@ export function AppsPage({ notify }: Props) {
           {apps.map((app) => (
             <div
               key={app.id}
-              className={`app-row${draggingId === app.id ? " dragging" : ""}`}
+              className={`app-row${draggingId === app.id ? " dragging" : ""}${overId === app.id ? " drag-over" : ""}`}
               draggable
               onDragStart={(e) => handleDragStart(e, app)}
               onDragOver={(e) => handleDragOver(e, app)}
+              onDrop={(e) => handleDrop(e, app)}
               onDragEnd={handleDragEnd}
             >
-              <span className="drag-handle" title="Arrastar para reordenar">
+              <span
+                className="drag-handle"
+                title="Arrastar para reordenar"
+                onMouseDown={() => {
+                  dragAllowedRef.current = true;
+                }}
+              >
                 ⠿
               </span>
               <span className="app-row-icon">{iconFor(app.icon)}</span>

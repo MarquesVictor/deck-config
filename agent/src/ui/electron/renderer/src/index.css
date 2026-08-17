@@ -231,6 +231,10 @@ select {
   opacity: 0.4;
 }
 
+.app-row.drag-over {
+  border-color: var(--accent);
+}
+
 .drag-handle {
   flex: none;
   color: var(--text-faint);
