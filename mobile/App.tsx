@@ -4,6 +4,7 @@ import { StyleSheet, View } from "react-native";
 import { ConnectScreen } from "./src/screens/ConnectScreen";
 import { ControlScreen } from "./src/screens/ControlScreen";
 import { AgentClient, type AgentInfo } from "./src/services/websocketClient";
+import { colors } from "./src/theme";
 
 export default function App() {
   const clientRef = useRef<AgentClient>(new AgentClient());
@@ -31,6 +32,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111318",
+    backgroundColor: colors.bg,
   },
 });

@@ -1,16 +1,23 @@
+/* Palette lifted from the "Aura Dark (Soft Text)" VS Code theme
+   (github.com/daltonmenezes/aura-theme). Aura pairs two accents rather
+   than one: soft green for primary actions/buttons, purple for
+   cursor/selection/focus — kept that split here instead of flattening to
+   a single accent color. */
 :root {
-  --bg: #111318;
-  --surface: #1a1d24;
-  --surface-raised: #20242c;
-  --border: #2a2f3a;
-  --text: #f2f4f8;
-  --text-dim: #9aa0a6;
-  --text-faint: #5f6368;
-  --accent: #3b82f6;
-  --accent-hover: #5b95f7;
-  --danger: #ff6b6b;
-  --success: #34d399;
-  --warning: #facc15;
+  --bg: #110f18;
+  --surface: #15141b;
+  --surface-raised: #1c1a24;
+  --border: #3b334b;
+  --text: #bdbdbd;
+  --text-dim: #8f8b9c;
+  --text-faint: #6d6d6d;
+  --accent: #54c59f;
+  --accent-hover: #489f83;
+  --purple: #8464c6;
+  --purple-muted: rgba(132, 100, 198, 0.18);
+  --danger: #c55858;
+  --success: #54c59f;
+  --warning: #c7a06f;
   --radius: 12px;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
@@ -232,7 +239,7 @@ select {
 }
 
 .app-row.drag-over {
-  border-color: var(--accent);
+  border-color: var(--purple);
 }
 
 .drag-handle {
@@ -251,8 +258,19 @@ select {
 .app-row-icon {
   font-size: 24px;
   width: 36px;
+  height: 36px;
   text-align: center;
   flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-row-icon-image {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
 }
 
 .app-row-body {
@@ -314,7 +332,7 @@ select {
 .form-field input:focus,
 .form-field select:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--purple);
 }
 
 .form-row {
@@ -352,8 +370,20 @@ select {
 }
 
 .icon-option.selected {
-  border-color: var(--accent);
-  background: rgba(59, 130, 246, 0.15);
+  border-color: var(--purple);
+  background: var(--purple-muted);
+}
+
+.icon-option-image {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+}
+
+.form-hint {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  margin: 6px 0 0;
 }
 
 .toast {
@@ -436,7 +466,7 @@ select {
 .connect-hint {
   font-family: var(--mono);
   font-size: 13px;
-  color: var(--accent);
+  color: var(--purple);
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 8px;

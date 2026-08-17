@@ -15,6 +15,8 @@ export const AppSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   icon: z.string().min(1),
+  /** Data URL (PNG) extracted from the executable/app bundle's own icon, if any. Takes priority over `icon` when present. */
+  iconImage: z.string().optional(),
   type: z.literal("application"),
   action: AppActionSchema,
   position: z.number().int().nonnegative(),
@@ -28,6 +30,7 @@ export const AppSummarySchema = z.object({
   id: z.string(),
   name: z.string(),
   icon: z.string(),
+  iconImage: z.string().optional(),
   position: z.number(),
   actionType: z.literal("open_app"),
 });
@@ -38,6 +41,7 @@ export function toAppSummary(app: App): AppSummary {
     id: app.id,
     name: app.name,
     icon: app.icon,
+    iconImage: app.iconImage,
     position: app.position,
     actionType: app.action.type,
   };

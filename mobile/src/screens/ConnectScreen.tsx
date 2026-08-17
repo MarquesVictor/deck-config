@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import type { AgentClient, AgentInfo } from "../services/websocketClient";
 import { loadLastConnection, saveLastConnection } from "../services/storage";
+import { colors } from "../theme";
 
 const DEFAULT_PORT = "38421";
 
@@ -77,7 +78,7 @@ export function ConnectScreen({ client, onConnected }: Props) {
           value={host}
           onChangeText={setHost}
           placeholder="192.168.1.10"
-          placeholderTextColor="#888"
+          placeholderTextColor={colors.textFaint}
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="numbers-and-punctuation"
@@ -89,7 +90,7 @@ export function ConnectScreen({ client, onConnected }: Props) {
           value={port}
           onChangeText={setPort}
           placeholder={DEFAULT_PORT}
-          placeholderTextColor="#888"
+          placeholderTextColor={colors.textFaint}
           keyboardType="number-pad"
         />
 
@@ -118,19 +119,19 @@ export function ConnectScreen({ client, onConnected }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111318",
+    backgroundColor: colors.bg,
     justifyContent: "center",
     paddingHorizontal: 24,
   },
   title: {
     fontSize: 32,
     fontWeight: "700",
-    color: "#fff",
+    color: colors.text,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 15,
-    color: "#9aa0a6",
+    color: colors.textMuted,
     textAlign: "center",
     marginTop: 4,
     marginBottom: 32,
@@ -139,26 +140,26 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    color: "#9aa0a6",
+    color: colors.textMuted,
     fontSize: 13,
     marginTop: 12,
   },
   input: {
-    backgroundColor: "#1c1f26",
-    color: "#fff",
+    backgroundColor: colors.surface,
+    color: colors.text,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
   },
   error: {
-    color: "#ff6b6b",
+    color: colors.danger,
     marginTop: 12,
     fontSize: 13,
   },
   button: {
     marginTop: 24,
-    backgroundColor: "#3b82f6",
+    backgroundColor: colors.accent,
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: "center",
@@ -167,12 +168,12 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: "#fff",
+    color: colors.text,
     fontWeight: "700",
     letterSpacing: 0.5,
   },
   hint: {
-    color: "#5f6368",
+    color: colors.textFaint,
     fontSize: 12,
     textAlign: "center",
     marginTop: 32,

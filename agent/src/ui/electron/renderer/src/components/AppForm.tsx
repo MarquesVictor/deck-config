@@ -9,16 +9,51 @@ interface Props {
   onSubmit: (input: AppInput) => Promise<void>;
 }
 
+/** "/Applications/Discord.app" -> "Discord", "C:\Games\CS2\cs2.exe" -> "cs2" */
+function deriveNameFromPath(filePath: string): string {
+  const segments = filePath.split(/[\\/]/);
+  const base = segments[segments.length - 1] ?? "";
+  return base.replace(/\.(app|exe)$/i, "");
+}
+
 export function AppForm({ initial, onCancel, onSubmit }: Props) {
   const [name, setName] = useState(initial?.name ?? "");
   const [path, setPath] = useState(initial?.action.path ?? "");
   const [icon, setIcon] = useState(initial?.icon ?? "box");
+  const [systemIcon, setSystemIcon] = useState<string | null>(initial?.iconImage ?? null);
+  // Once the user explicitly picks an emoji, the system icon (if any) stops
+  // being the active choice — but stays fetched, so clicking it again in
+  // the picker re-selects it without a second lookup.
+  const [manualOverride, setManualOverride] = useState(!initial?.iconImage && !!initial);
+  const [fetchingIcon, setFetchingIcon] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const usingSystemIcon = systemIcon !== null && !manualOverride;
+
   const handleBrowse = async () => {
     const picked = await window.streamDeck.pickExecutable();
-    if (picked) setPath(picked);
+    if (!picked) return;
+    setPath(picked);
+    // New apps have no name or icon to protect yet, so fill both in right
+    // away. Editing an existing app never overwrites either automatically —
+    // the icon keeps its manual button, and the name is left as typed.
+    if (!initial) {
+      if (!name.trim()) setName(deriveNameFromPath(picked));
+      await fetchIconFor(picked);
+    }
+  };
+
+  const fetchIconFor = async (targetPath: string) => {
+    if (!targetPath.trim()) return;
+    setFetchingIcon(true);
+    try {
+      const image = await window.streamDeck.getFileIcon(targetPath.trim());
+      setSystemIcon(image);
+      setManualOverride(image === null);
+    } finally {
+      setFetchingIcon(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +64,12 @@ export function AppForm({ initial, onCancel, onSubmit }: Props) {
     setError(null);
     setSaving(true);
     try {
-      await onSubmit({ name: name.trim(), path: path.trim(), icon });
+      await onSubmit({
+        name: name.trim(),
+        path: path.trim(),
+        icon,
+        iconImage: usingSystemIcon ? (systemIcon ?? undefined) : undefined,
+      });
     } catch {
       setError("Não foi possível salvar. Tente novamente.");
     } finally {
@@ -61,7 +101,32 @@ export function AppForm({ initial, onCancel, onSubmit }: Props) {
 
       <div className="form-field">
         <label>Ícone</label>
-        <IconPicker value={icon} onChange={setIcon} />
+        <IconPicker
+          value={icon}
+          onChange={(id) => {
+            setIcon(id);
+            setManualOverride(true);
+          }}
+          systemIconUrl={systemIcon}
+          usingSystemIcon={usingSystemIcon}
+          onSelectSystemIcon={() => setManualOverride(false)}
+        />
+        {initial && (
+          <div className="form-actions" style={{ justifyContent: "flex-start", marginTop: 8 }}>
+            <button
+              type="button"
+              className="btn btn-sm"
+              onClick={() => fetchIconFor(path)}
+              disabled={fetchingIcon || !path.trim()}
+            >
+              {fetchingIcon ? "Buscando..." : "Buscar ícone do aplicativo"}
+            </button>
+          </div>
+        )}
+        {fetchingIcon && <p className="form-hint">Buscando ícone do aplicativo...</p>}
+        {!fetchingIcon && systemIcon === null && (
+          <p className="form-hint">Nenhum ícone encontrado ainda — usando o emoji selecionado acima.</p>
+        )}
       </div>
 
       {error && <p style={{ color: "var(--danger)", fontSize: 12.5, margin: 0 }}>{error}</p>}

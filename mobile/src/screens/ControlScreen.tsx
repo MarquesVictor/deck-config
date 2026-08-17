@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,6 +11,7 @@ import {
 } from "react-native";
 import { iconFor, type AppSummary } from "@stream-deck/shared";
 import type { AgentClient, AgentInfo, ConnectionStatus } from "../services/websocketClient";
+import { colors } from "../theme";
 
 type ButtonState = "idle" | "loading" | "success" | "error";
 
@@ -18,6 +20,14 @@ interface Props {
   agent: AgentInfo;
   onDisconnect: () => void;
 }
+
+const STATUS_COPY: Record<ConnectionStatus, { label: string; dot: string }> = {
+  connected: { label: "Conectado", dot: colors.success },
+  connecting: { label: "Conectando...", dot: colors.purple },
+  reconnecting: { label: "Reconectando...", dot: colors.warning },
+  failed: { label: "Desconectado", dot: colors.danger },
+  disconnected: { label: "Desconectado", dot: colors.danger },
+};
 
 export function ControlScreen({ client, agent, onDisconnect }: Props) {
   const { width, height } = useWindowDimensions();
@@ -70,19 +80,27 @@ export function ControlScreen({ client, agent, onDisconnect }: Props) {
     }
   };
 
+  const statusCopy = STATUS_COPY[status];
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{agent.name}</Text>
-        <StatusBadge status={status} />
-        <TouchableOpacity onPress={onDisconnect}>
-          <Text style={styles.disconnect}>Desconectar</Text>
+        <View style={styles.headerInfo}>
+          <View style={styles.headerTitleRow}>
+            <View style={[styles.statusDot, { backgroundColor: statusCopy.dot }]} />
+            <Text style={styles.headerTitle} numberOfLines={1}>
+              {agent.name}
+            </Text>
+          </View>
+          <Text style={styles.headerSubtitle}>{statusCopy.label}</Text>
+        </View>
+
+        <TouchableOpacity style={styles.disconnectButton} onPress={onDisconnect} hitSlop={8}>
+          <Text style={styles.disconnectIcon}>⏻</Text>
         </TouchableOpacity>
       </View>
 
-      {status === "reconnecting" && (
-        <Text style={styles.banner}>🟡 Reconectando...</Text>
-      )}
+      {status === "reconnecting" && <Text style={styles.banner}>Reconectando...</Text>}
       {status === "failed" && (
         <View style={styles.bannerRow}>
           <Text style={[styles.banner, styles.bannerError]}>Não foi possível reconectar.</Text>
@@ -93,7 +111,7 @@ export function ControlScreen({ client, agent, onDisconnect }: Props) {
       )}
 
       {loadingApps ? (
-        <ActivityIndicator style={styles.loading} color="#3b82f6" />
+        <ActivityIndicator style={styles.loading} color={colors.accent} />
       ) : apps.length === 0 ? (
         <Text style={styles.empty}>
           Nenhum aplicativo configurado ainda.{"\n"}Adicione um pelo Stream Deck Agent no computador.
@@ -119,11 +137,6 @@ export function ControlScreen({ client, agent, onDisconnect }: Props) {
   );
 }
 
-function StatusBadge({ status }: { status: ConnectionStatus }) {
-  const label = status === "connected" ? "🟢 Conectado" : status === "reconnecting" ? "🟡 Reconectando" : status === "failed" ? "🔴 Desconectado" : "⚪ Conectando";
-  return <Text style={styles.statusBadge}>{label}</Text>;
-}
-
 function AppButton({
   app,
   state,
@@ -142,11 +155,13 @@ function AppButton({
       disabled={disabled || state === "loading"}
     >
       {state === "loading" ? (
-        <ActivityIndicator color="#fff" />
+        <ActivityIndicator color={colors.text} />
       ) : state === "success" ? (
         <Text style={styles.buttonIcon}>✅</Text>
       ) : state === "error" ? (
         <Text style={styles.buttonIcon}>❌</Text>
+      ) : app.iconImage ? (
+        <Image source={{ uri: app.iconImage }} style={styles.buttonIconImage} />
       ) : (
         <Text style={styles.buttonIcon}>{iconFor(app.icon)}</Text>
       )}
@@ -160,33 +175,65 @@ function AppButton({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111318",
+    backgroundColor: colors.bg,
     paddingTop: 56,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 12,
     paddingHorizontal: 20,
+    paddingVertical: 16,
     marginBottom: 8,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  headerInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  headerTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   headerTitle: {
-    color: "#fff",
-    fontSize: 18,
+    color: colors.text,
+    fontSize: 17,
     fontWeight: "700",
+    flexShrink: 1,
   },
-  statusBadge: {
-    color: "#9aa0a6",
-    fontSize: 12,
+  headerSubtitle: {
+    color: colors.textMuted,
+    fontSize: 12.5,
+    marginTop: 3,
+    marginLeft: 16,
   },
-  disconnect: {
-    color: "#ff6b6b",
-    fontSize: 13,
+  disconnectButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.dangerMuted,
+  },
+  disconnectIcon: {
+    color: colors.danger,
+    fontSize: 16,
+    fontWeight: "700",
   },
   banner: {
     textAlign: "center",
-    color: "#facc15",
+    color: colors.warning,
     paddingVertical: 8,
+    fontSize: 13,
   },
   bannerRow: {
     flexDirection: "row",
@@ -196,17 +243,18 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   bannerError: {
-    color: "#ff6b6b",
+    color: colors.danger,
   },
   retryLink: {
-    color: "#3b82f6",
+    color: colors.accent,
     fontWeight: "600",
+    fontSize: 13,
   },
   loading: {
     marginTop: 40,
   },
   empty: {
-    color: "#5f6368",
+    color: colors.textFaint,
     textAlign: "center",
     marginTop: 60,
     paddingHorizontal: 32,
@@ -219,7 +267,7 @@ const styles = StyleSheet.create({
     flex: 1,
     aspectRatio: 1,
     margin: 8,
-    backgroundColor: "#1c1f26",
+    backgroundColor: colors.surface,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
@@ -231,8 +279,13 @@ const styles = StyleSheet.create({
   buttonIcon: {
     fontSize: 32,
   },
+  buttonIconImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+  },
   buttonLabel: {
-    color: "#fff",
+    color: colors.text,
     fontSize: 13,
     paddingHorizontal: 6,
   },

@@ -162,7 +162,13 @@ export function AppsPage({ notify }: Props) {
               >
                 ⠿
               </span>
-              <span className="app-row-icon">{iconFor(app.icon)}</span>
+              <span className="app-row-icon">
+                {app.iconImage ? (
+                  <img className="app-row-icon-image" src={app.iconImage} alt="" />
+                ) : (
+                  iconFor(app.icon)
+                )}
+              </span>
               <div className="app-row-body">
                 <div className="app-row-name">{app.name}</div>
                 <div className="app-row-path">{app.action.path}</div>

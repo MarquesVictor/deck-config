@@ -8,6 +8,7 @@ import type { ConnectionManager } from "../transport/websocket/connectionManager
 export interface AppInput {
   name: string;
   icon: string;
+  iconImage?: string;
   path: string;
 }
 
@@ -53,6 +54,7 @@ export class AgentService {
       id: `app_${randomUUID().split("-")[0]}`,
       name: input.name,
       icon: input.icon,
+      iconImage: input.iconImage,
       type: "application",
       action: { type: "open_app", path: input.path },
       position: apps.length,
@@ -72,6 +74,7 @@ export class AgentService {
       ...existing,
       name: input.name,
       icon: input.icon,
+      iconImage: input.iconImage,
       action: { type: "open_app", path: input.path },
       updatedAt: new Date().toISOString(),
     };

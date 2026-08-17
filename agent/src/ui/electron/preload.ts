@@ -13,6 +13,7 @@ const api: StreamDeckApi = {
   updateSettings: (patch) => ipcRenderer.invoke(IPC_CHANNELS.updateSettings, patch),
   getMachineInfo: () => ipcRenderer.invoke(IPC_CHANNELS.getMachineInfo),
   pickExecutable: () => ipcRenderer.invoke(IPC_CHANNELS.pickExecutable),
+  getFileIcon: (path) => ipcRenderer.invoke(IPC_CHANNELS.getFileIcon, path),
 };
 
 contextBridge.exposeInMainWorld("streamDeck", api);

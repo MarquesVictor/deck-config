@@ -17,6 +17,7 @@ export const IPC_CHANNELS = {
   updateSettings: "settings:update",
   getMachineInfo: "machine:info",
   pickExecutable: "dialog:pickExecutable",
+  getFileIcon: "dialog:getFileIcon",
 } as const;
 
 /** Renderer -> main invoke contract. Keeps preload.ts and main.ts in sync by construction. */
@@ -32,6 +33,8 @@ export interface StreamDeckApi {
   updateSettings: (patch: Partial<AgentSettings>) => Promise<AgentSettings>;
   getMachineInfo: () => Promise<MachineInfo>;
   pickExecutable: () => Promise<string | null>;
+  /** Extracts the executable/app bundle's own icon as a PNG data URL, if the path exists. */
+  getFileIcon: (path: string) => Promise<string | null>;
 }
 
 declare global {

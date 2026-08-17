@@ -3,6 +3,7 @@ import { app, BrowserWindow, Menu, Tray, dialog, ipcMain, nativeImage } from "el
 import { ProtocolError } from "@stream-deck/shared";
 import { AGENT_VERSION, bootstrapAgent, type BootstrappedAgent } from "../../core/bootstrap";
 import { AgentService } from "../../core/agentService";
+import { extractMacAppIcon } from "../../platform/macIcon";
 import { IPC_CHANNELS } from "./ipc";
 
 const RENDERER_DEV_SERVER_URL = "http://localhost:5173";
@@ -130,6 +131,21 @@ function registerIpcHandlers(service: AgentService): void {
       filters,
     });
     return result.canceled ? null : (result.filePaths[0] ?? null);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.getFileIcon, async (_e, targetPath: string) => {
+    if (process.platform === "darwin") {
+      return extractMacAppIcon(targetPath, ASSETS_DIR);
+    }
+    try {
+      // No `size` option: it's Windows/Linux-only in Electron — macOS
+      // (handled above) ignores it, and passing "large" there is what
+      // caused a native crash (unsupported enum value on that platform).
+      const image = await app.getFileIcon(targetPath);
+      return image.isEmpty() ? null : image.toDataURL();
+    } catch {
+      return null;
+    }
   });
 }
 
