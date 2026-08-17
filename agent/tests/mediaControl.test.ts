@@ -90,13 +90,28 @@ describe.runIf(process.platform === "darwin")("media_control on macOS (real syst
     expect(await getMuted()).toBe(before);
   });
 
-  it("media transport commands run without throwing", async () => {
+  it("media transport commands either work or fail with a clear Accessibility-permission error", async () => {
+    // Posting the NX_KEYTYPE event requires Accessibility permission for
+    // whatever process runs this suite — not something a test can grant
+    // itself. Assert the two acceptable outcomes: it actually works, or it
+    // fails with our specific, actionable message (never a silent no-op,
+    // never some unrelated crash).
     const registry = new ActionRegistry();
     registerMediaControlActions(registry, ASSETS_DIR);
 
-    await expect(registry.execute("media_play_pause", { command: "media_play_pause" })).resolves.toBeUndefined();
-    await expect(registry.execute("media_next", { command: "media_next" })).resolves.toBeUndefined();
-    await expect(registry.execute("media_previous", { command: "media_previous" })).resolves.toBeUndefined();
+    for (const command of ["media_play_pause", "media_next", "media_previous"] as const) {
+      const error: ProtocolError | undefined = await registry
+        .execute(command, { command })
+        .then(() => undefined)
+        .catch((e) => e);
+
+      if (error) {
+        expect(error).toBeInstanceOf(ProtocolError);
+        expect(String((error as ProtocolError & { details?: { cause?: string } }).details?.cause)).toContain(
+          "Permissão de Acessibilidade",
+        );
+      }
+    }
   });
 
   it("wraps a failing platform command in a ProtocolError", async () => {

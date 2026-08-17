@@ -2,10 +2,20 @@
 // macOS has no shell command for "press the media key" the way AppleScript
 // has `set volume`. This posts the same NX_KEYTYPE system-defined HID event
 // hardware media keys generate — the technique used by most third-party
-// menu-bar media control utilities. Requires the calling process (the
-// packaged Agent app) to have Accessibility permission granted in System
-// Settings > Privacy & Security > Accessibility.
+// menu-bar media control utilities.
+//
+// This requires Accessibility permission for the calling process (System
+// Settings > Privacy & Security > Accessibility). Without it, CGEventPost
+// doesn't throw or fail — it just silently drops the event, which is worse
+// than an error, so AXIsProcessTrusted() is checked first and a real error
+// is thrown when it's false.
+//
+// AXIsProcessTrustedWithOptions() (the variant that can trigger the native
+// permission-request dialog automatically) segfaulted when constructing its
+// options dictionary through this JS-ObjC bridge — not used here. The user
+// has to grant this manually.
 ObjC.import("AppKit");
+ObjC.import("ApplicationServices");
 ObjC.import("CoreGraphics");
 
 // NX_KEYTYPE_* constants (Events.h)
@@ -21,17 +31,24 @@ function run(argv) {
   if (keyCode === undefined) {
     throw new Error(`Unknown media key: ${which}`);
   }
+
+  if (!$.AXIsProcessTrusted()) {
+    throw new Error(
+      "Permissão de Acessibilidade necessária. Ative em Ajustes do Sistema > Privacidade e Segurança > Acessibilidade.",
+    );
+  }
+
   postKey(keyCode, true);
   postKey(keyCode, false);
 }
 
 function postKey(keyCode, isDown) {
   const flags = isDown ? 0xa00 : 0xb00;
-  const data1 = (keyCode << 16) | (flags << 0);
+  const data1 = (keyCode << 16) | flags;
   const event = $.NSEvent.otherEventWithTypeLocationModifierFlagsTimestampWindowNumberContextSubtypeData1Data2(
     $.NSEventTypeSystemDefined,
     $.NSMakePoint(0, 0),
-    isDown ? 0xa00 : 0xb00,
+    flags,
     0,
     0,
     $(),
