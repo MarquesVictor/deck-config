@@ -170,14 +170,20 @@ async function handleMessage(
     send(connection.socket, { type: "response", requestId, success: true, data });
   } catch (err) {
     const error = toErrorPayload(err);
-    logger.error(`Request ${requestId} failed: ${error.code} - ${error.message}`);
+    const detailsSuffix = error.details !== undefined ? ` | details: ${JSON.stringify(error.details)}` : "";
+    logger.error(`Request ${requestId} failed: ${error.code} - ${error.message}${detailsSuffix}`);
     send(connection.socket, { type: "response", requestId, success: false, error });
   }
 }
 
 function toErrorPayload(err: unknown) {
   if (err instanceof ProtocolError) {
-    return { code: err.code, message: err.message, timestamp: new Date().toISOString() };
+    return {
+      code: err.code,
+      message: err.message,
+      timestamp: new Date().toISOString(),
+      details: err.details,
+    };
   }
   const message = err instanceof Error ? err.message : "Erro desconhecido.";
   return {
