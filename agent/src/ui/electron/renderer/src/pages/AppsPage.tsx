@@ -14,6 +14,7 @@ export function AppsPage({ notify }: Props) {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<EditingState>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   const refresh = () => window.streamDeck.listApps().then(setApps);
 
@@ -58,6 +59,35 @@ export function AppsPage({ notify }: Props) {
 
   const editingApp = editing && editing !== "new" ? apps.find((a) => a.id === editing.id) : undefined;
 
+  const handleDragStart = (e: React.DragEvent, app: App) => {
+    if (!(e.target as HTMLElement).closest(".drag-handle")) {
+      e.preventDefault();
+      return;
+    }
+    setDraggingId(app.id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent, overApp: App) => {
+    e.preventDefault();
+    if (!draggingId || draggingId === overApp.id) return;
+
+    setApps((prev) => {
+      const from = prev.findIndex((a) => a.id === draggingId);
+      const to = prev.findIndex((a) => a.id === overApp.id);
+      if (from === -1 || to === -1) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved!);
+      return next;
+    });
+  };
+
+  const handleDragEnd = async () => {
+    setDraggingId(null);
+    await window.streamDeck.reorderApps(apps.map((a) => a.id));
+  };
+
   return (
     <>
       <div className="page-header">
@@ -95,7 +125,17 @@ export function AppsPage({ notify }: Props) {
       ) : (
         <div className="app-list">
           {apps.map((app) => (
-            <div key={app.id} className="app-row">
+            <div
+              key={app.id}
+              className={`app-row${draggingId === app.id ? " dragging" : ""}`}
+              draggable
+              onDragStart={(e) => handleDragStart(e, app)}
+              onDragOver={(e) => handleDragOver(e, app)}
+              onDragEnd={handleDragEnd}
+            >
+              <span className="drag-handle" title="Arrastar para reordenar">
+                ⠿
+              </span>
               <span className="app-row-icon">{iconFor(app.icon)}</span>
               <div className="app-row-body">
                 <div className="app-row-name">{app.name}</div>

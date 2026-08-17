@@ -227,6 +227,23 @@ select {
   border-radius: var(--radius);
 }
 
+.app-row.dragging {
+  opacity: 0.4;
+}
+
+.drag-handle {
+  flex: none;
+  color: var(--text-faint);
+  cursor: grab;
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 2px;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
 .app-row-icon {
   font-size: 24px;
   width: 36px;
