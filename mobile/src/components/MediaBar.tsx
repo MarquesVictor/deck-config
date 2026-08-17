@@ -1,20 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+// Importing from the package root (`@expo/vector-icons`) pulls every icon
+// family's font file into the bundle. This subpath import keeps it to just
+// the one font actually used here.
+import Ionicons from "@expo/vector-icons/Ionicons";
 import Slider from "@react-native-community/slider";
 import type { MediaCommand, VolumeState } from "@stream-deck/shared";
 import type { AgentClient } from "../services/websocketClient";
 import { colors } from "../theme";
 
+type IoniconName = keyof typeof Ionicons.glyphMap;
+
 interface TransportSpec {
   command: MediaCommand;
-  icon: string;
+  icon: IoniconName;
   label: string;
 }
 
 const TRANSPORT_BUTTONS: TransportSpec[] = [
-  { command: "media_previous", icon: "⏮", label: "Anterior" },
-  { command: "media_play_pause", icon: "⏯", label: "Play/Pause" },
-  { command: "media_next", icon: "⏭", label: "Próxima" },
+  { command: "media_previous", icon: "play-skip-back", label: "Anterior" },
+  { command: "media_play_pause", icon: "play", label: "Play/Pause" },
+  { command: "media_next", icon: "play-skip-forward", label: "Próxima" },
 ];
 
 interface Props {
@@ -94,7 +100,13 @@ export function MediaBar({ client, disabled }: Props) {
   };
 
   const shownVolume = dragValue ?? volumeState?.volume ?? 0;
-  const volumeIcon = volumeState?.muted ? "🔇" : shownVolume === 0 ? "🔈" : shownVolume < 60 ? "🔉" : "🔊";
+  const volumeIcon: IoniconName = volumeState?.muted
+    ? "volume-mute"
+    : shownVolume === 0
+      ? "volume-off"
+      : shownVolume < 60
+        ? "volume-medium"
+        : "volume-high";
 
   return (
     <View style={[styles.bar, disabled && styles.barDisabled]}>
@@ -106,18 +118,22 @@ export function MediaBar({ client, disabled }: Props) {
             onPress={() => pressTransport(btn.command)}
             accessibilityLabel={btn.label}
           >
-            <Text style={[styles.transportIcon, erroredCommand === btn.command && styles.iconError]}>
-              {btn.icon}
-            </Text>
+            <Ionicons
+              name={btn.icon}
+              size={20}
+              color={erroredCommand === btn.command ? colors.danger : colors.text}
+            />
           </TouchableOpacity>
         ))}
       </View>
 
       <View style={styles.volumeRow}>
-        <TouchableOpacity onPress={pressMute} accessibilityLabel="Mudo" style={styles.volumeIconButton}>
-          <Text style={[styles.volumeIcon, erroredCommand === "volume_mute" && styles.iconError]}>
-            {volumeIcon}
-          </Text>
+        <TouchableOpacity onPress={pressMute} accessibilityLabel="Mudo" style={styles.iconButtonSmall}>
+          <Ionicons
+            name={volumeIcon}
+            size={19}
+            color={erroredCommand === "volume_mute" ? colors.danger : colors.textMuted}
+          />
         </TouchableOpacity>
         <Slider
           style={styles.slider}
@@ -133,9 +149,11 @@ export function MediaBar({ client, disabled }: Props) {
           thumbTintColor={colors.accent}
         />
         <TouchableOpacity onPress={pressMic} accessibilityLabel="Microfone" style={styles.micButton}>
-          <Text style={[styles.micIcon, erroredCommand === "mic_mute" && styles.iconError]}>
-            {micMuted ? "🔇" : "🎙️"}
-          </Text>
+          <Ionicons
+            name={micMuted ? "mic-off" : "mic"}
+            size={16}
+            color={erroredCommand === "mic_mute" ? colors.danger : colors.text}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -170,23 +188,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.surfaceRaised,
   },
-  transportIcon: {
-    fontSize: 20,
-    color: colors.text,
-  },
   volumeRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
-  volumeIconButton: {
+  iconButtonSmall: {
     width: 32,
     height: 32,
     alignItems: "center",
     justifyContent: "center",
-  },
-  volumeIcon: {
-    fontSize: 18,
   },
   slider: {
     flex: 1,
@@ -199,11 +210,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.surfaceRaised,
-  },
-  micIcon: {
-    fontSize: 16,
-  },
-  iconError: {
-    opacity: 0.35,
   },
 });
