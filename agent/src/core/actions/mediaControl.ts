@@ -14,12 +14,12 @@ const MEDIA_COMMANDS: MediaCommand[] = [
 ];
 
 /** Registers each MediaCommand as its own ActionRegistry action type, dispatched by platform. */
-export function registerMediaControlActions(registry: ActionRegistry, assetsDir: string): void {
+export function registerMediaControlActions(registry: ActionRegistry): void {
   for (const command of MEDIA_COMMANDS) {
     registry.register(command, async () => {
       try {
         if (process.platform === "darwin") {
-          await runMacMediaCommand(command, assetsDir);
+          await runMacMediaCommand(command);
         } else if (process.platform === "win32") {
           await runWindowsMediaCommand(command);
         } else {

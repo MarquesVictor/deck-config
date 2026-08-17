@@ -1,5 +1,4 @@
 import { execFile } from "node:child_process";
-import path from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it, vi } from "vitest";
 import { MediaControlPayloadSchema, ProtocolError } from "@stream-deck/shared";
@@ -9,7 +8,6 @@ import { RequestRouter } from "../src/core/requestRouter";
 import type { IConfigStore } from "../src/core/persistence/configStore";
 
 const execFileAsync = promisify(execFile);
-const ASSETS_DIR = path.join(__dirname, "../src/ui/electron/assets");
 
 // RequestRouter needs a configStore, but media_control never touches it.
 const unusedConfigStore = {} as IConfigStore;
@@ -60,9 +58,17 @@ describe.runIf(process.platform === "darwin")("media_control on macOS (real syst
     return Number(stdout.trim());
   }
 
+  async function isAppRunning(appName: string): Promise<boolean> {
+    const { stdout } = await execFileAsync("/usr/bin/osascript", [
+      "-e",
+      `tell application "System Events" to (name of processes) contains "${appName}"`,
+    ]);
+    return stdout.trim() === "true";
+  }
+
   it("volume_up followed by volume_down returns to a nearby volume", async () => {
     const registry = new ActionRegistry();
-    registerMediaControlActions(registry, ASSETS_DIR);
+    registerMediaControlActions(registry);
 
     const before = await getOutputVolume();
     await registry.execute("volume_up", { command: "volume_up" });
@@ -76,7 +82,7 @@ describe.runIf(process.platform === "darwin")("media_control on macOS (real syst
 
   it("volume_mute toggles output muted and back", async () => {
     const registry = new ActionRegistry();
-    registerMediaControlActions(registry, ASSETS_DIR);
+    registerMediaControlActions(registry);
 
     const getMuted = async () => {
       const { stdout } = await execFileAsync("/usr/bin/osascript", ["-e", "output muted of (get volume settings)"]);
@@ -90,39 +96,31 @@ describe.runIf(process.platform === "darwin")("media_control on macOS (real syst
     expect(await getMuted()).toBe(before);
   });
 
-  it("media transport commands either work or fail with a clear Accessibility-permission error", async () => {
-    // Posting the NX_KEYTYPE event requires Accessibility permission for
-    // whatever process runs this suite — not something a test can grant
-    // itself. Assert the two acceptable outcomes: it actually works, or it
-    // fails with our specific, actionable message (never a silent no-op,
-    // never some unrelated crash).
+  it("media transport targets Spotify/Music when one is running, else gives a clear error", async () => {
     const registry = new ActionRegistry();
-    registerMediaControlActions(registry, ASSETS_DIR);
+    registerMediaControlActions(registry);
 
-    for (const command of ["media_play_pause", "media_next", "media_previous"] as const) {
-      const error: ProtocolError | undefined = await registry
-        .execute(command, { command })
-        .then(() => undefined)
+    const playerRunning = (await isAppRunning("Spotify")) || (await isAppRunning("Music"));
+
+    if (!playerRunning) {
+      const error: ProtocolError = await registry
+        .execute("media_play_pause", { command: "media_play_pause" })
         .catch((e) => e);
-
-      if (error) {
-        expect(error).toBeInstanceOf(ProtocolError);
-        expect(String((error as ProtocolError & { details?: { cause?: string } }).details?.cause)).toContain(
-          "Permissão de Acessibilidade",
-        );
-      }
+      expect(error).toBeInstanceOf(ProtocolError);
+      expect(String((error as ProtocolError & { details?: { cause?: string } }).details?.cause)).toContain(
+        "Nenhum app de música",
+      );
+      return;
     }
-  });
 
-  it("wraps a failing platform command in a ProtocolError", async () => {
-    const registry = new ActionRegistry();
-    // Point at a directory with no such script to force a real failure path.
-    registerMediaControlActions(registry, path.join(__dirname, "does-not-exist"));
+    // A real player is running: playpause should actually toggle its state
+    // (verified manually against a live Spotify instance — track and
+    // play/pause state genuinely changed and back). Toggle twice here to
+    // leave the user's playback state as found.
+    await expect(registry.execute("media_play_pause", { command: "media_play_pause" })).resolves.toBeUndefined();
+    await registry.execute("media_play_pause", { command: "media_play_pause" });
 
-    const error: ProtocolError = await registry
-      .execute("media_next", { command: "media_next" })
-      .catch((e) => e);
-    expect(error).toBeInstanceOf(ProtocolError);
-    expect(error.code).toBe("INTERNAL_ERROR");
+    await expect(registry.execute("media_next", { command: "media_next" })).resolves.toBeUndefined();
+    await expect(registry.execute("media_previous", { command: "media_previous" })).resolves.toBeUndefined();
   });
 });

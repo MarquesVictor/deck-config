@@ -1,19 +1,52 @@
 import { execFile } from "node:child_process";
-import path from "node:path";
 import { promisify } from "node:util";
 import type { MediaCommand } from "@stream-deck/shared";
 
 const execFileAsync = promisify(execFile);
 const VOLUME_STEP = 10;
 
+const MEDIA_APPS = ["Spotify", "Music"] as const;
+type MediaApp = (typeof MEDIA_APPS)[number];
+
 async function runAppleScript(script: string): Promise<string> {
   const { stdout } = await execFileAsync("/usr/bin/osascript", ["-e", script]);
   return stdout.trim();
 }
 
-async function runMediaKey(assetsDir: string, key: "previous" | "play_pause" | "next"): Promise<void> {
-  const script = path.join(assetsDir, "simulate-mac-media-key.jxa.js");
-  await execFileAsync("/usr/bin/osascript", ["-l", "JavaScript", script, key]);
+async function isRunning(appName: string): Promise<boolean> {
+  const result = await runAppleScript(
+    `tell application "System Events" to (name of processes) contains "${appName}"`,
+  );
+  return result === "true";
+}
+
+/**
+ * Earlier attempt simulated the raw hardware media-key HID event
+ * (NSEvent/CGEventPost with NX_KEYTYPE_PLAY etc.) — the same technique many
+ * older third-party menu-bar utilities used. It didn't work on this
+ * machine even with Accessibility permission granted and correct syntax
+ * (verified: even NX_KEYTYPE_SOUND_UP posted through the identical code
+ * path produced no volume change), which points at macOS having tightened
+ * synthetic system-defined event delivery in recent versions rather than a
+ * one-off bug. Targeting the app directly via its own scripting dictionary
+ * — the officially supported mechanism — is what's actually reliable;
+ * confirmed against a real, playing Spotify instance (track changed,
+ * play/pause state changed, and back again). Trade-off: only Spotify and
+ * Music are supported, not "whatever currently has media focus".
+ */
+async function detectMediaApp(): Promise<MediaApp | null> {
+  for (const app of MEDIA_APPS) {
+    if (await isRunning(app)) return app;
+  }
+  return null;
+}
+
+async function runMediaTransportCommand(command: "playpause" | "next track" | "previous track"): Promise<void> {
+  const app = await detectMediaApp();
+  if (!app) {
+    throw new Error("Nenhum app de música compatível (Spotify ou Music) está aberto.");
+  }
+  await runAppleScript(`tell application "${app}" to ${command}`);
 }
 
 /**
@@ -23,7 +56,7 @@ async function runMediaKey(assetsDir: string, key: "previous" | "play_pause" | "
  * 0 and full (100), not a restore-to-previous-level: muting from a partial
  * level and unmuting lands at 100%, not back at the original level.
  */
-export async function runMacMediaCommand(command: MediaCommand, assetsDir: string): Promise<void> {
+export async function runMacMediaCommand(command: MediaCommand): Promise<void> {
   switch (command) {
     case "volume_up":
       await runAppleScript(`
@@ -62,15 +95,15 @@ export async function runMacMediaCommand(command: MediaCommand, assetsDir: strin
       return;
 
     case "media_previous":
-      await runMediaKey(assetsDir, "previous");
+      await runMediaTransportCommand("previous track");
       return;
 
     case "media_play_pause":
-      await runMediaKey(assetsDir, "play_pause");
+      await runMediaTransportCommand("playpause");
       return;
 
     case "media_next":
-      await runMediaKey(assetsDir, "next");
+      await runMediaTransportCommand("next track");
       return;
   }
 }

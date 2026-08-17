@@ -1,4 +1,3 @@
-import path from "node:path";
 import { ActionRegistry } from "./actions";
 import { createOpenAppHandler } from "./actions/openApp";
 import { registerMediaControlActions } from "./actions/mediaControl";
@@ -8,11 +7,6 @@ import { createLogger, type Logger } from "../platform/logger";
 import { localIPv4Addresses } from "../platform/network";
 import { advertiseAgent, type MdnsAdvertisement } from "../transport/mdns/advertiser";
 import { startWebSocketServer, type StartedServer } from "../transport/websocket/server";
-
-// Resolves correctly from both layouts: dev (src/core -> src/ui/electron/assets)
-// and the compiled Electron output (dist/core -> dist/ui/electron/assets, where
-// electron:copy-assets puts it).
-const ASSETS_DIR = path.join(__dirname, "../ui/electron/assets");
 
 export const AGENT_VERSION = "1.0.0";
 
@@ -46,7 +40,7 @@ export async function bootstrapAgent(): Promise<BootstrappedAgent> {
 
   const actionRegistry = new ActionRegistry();
   actionRegistry.register("open_app", createOpenAppHandler(configStore, logger));
-  registerMediaControlActions(actionRegistry, ASSETS_DIR);
+  registerMediaControlActions(actionRegistry);
 
   const router = new RequestRouter(configStore, actionRegistry);
 
