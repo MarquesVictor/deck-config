@@ -153,6 +153,7 @@ async function handleMessage(
 
   const request = parsed as RequestMessage;
   const requestId = request.requestId ?? "unknown";
+  logger.info(`Request ${requestId} received: action=${request.action} payload=${JSON.stringify(request.payload)}`);
 
   try {
     if (!SUPPORTED_PROTOCOL_VERSIONS.includes(request.protocolVersion)) {
@@ -167,6 +168,7 @@ async function handleMessage(
     connection.authenticated = true;
 
     const data = await router.handle(request);
+    logger.info(`Request ${requestId} succeeded`);
     send(connection.socket, { type: "response", requestId, success: true, data });
   } catch (err) {
     const error = toErrorPayload(err);
