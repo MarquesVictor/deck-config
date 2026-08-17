@@ -1,22 +1,30 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const LAST_CONNECTION_KEY = "streamdeck:lastConnection";
+const SAVED_AGENTS_KEY = "streamdeck:savedAgents";
 
-export interface LastConnection {
+export interface SavedAgent {
+  /** Locally generated id — stable across renames, independent of the Agent's own machineId. */
+  id: string;
+  name: string;
   host: string;
   port: number;
 }
 
-export async function saveLastConnection(connection: LastConnection): Promise<void> {
-  await AsyncStorage.setItem(LAST_CONNECTION_KEY, JSON.stringify(connection));
+export async function loadSavedAgents(): Promise<SavedAgent[]> {
+  const raw = await AsyncStorage.getItem(SAVED_AGENTS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
-export async function loadLastConnection(): Promise<LastConnection | null> {
-  const raw = await AsyncStorage.getItem(LAST_CONNECTION_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as LastConnection;
-  } catch {
-    return null;
-  }
+export async function saveSavedAgents(agents: SavedAgent[]): Promise<void> {
+  await AsyncStorage.setItem(SAVED_AGENTS_KEY, JSON.stringify(agents));
+}
+
+export function generateAgentId(): string {
+  return `saved_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }

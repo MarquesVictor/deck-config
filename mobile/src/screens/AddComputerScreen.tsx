@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -9,31 +9,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import type { AgentClient, AgentInfo } from "../services/websocketClient";
-import { loadLastConnection, saveLastConnection } from "../services/storage";
+import { AgentClient } from "../services/websocketClient";
+import { generateAgentId, type SavedAgent } from "../services/storage";
 import { colors } from "../theme";
 
 const DEFAULT_PORT = "38421";
 
 interface Props {
-  client: AgentClient;
-  onConnected: (agent: AgentInfo, host: string, port: number) => void;
+  onAdd: (agent: SavedAgent, client: AgentClient) => void;
 }
 
-export function ConnectScreen({ client, onConnected }: Props) {
+export function AddComputerScreen({ onAdd }: Props) {
+  const [name, setName] = useState("");
   const [host, setHost] = useState("");
   const [port, setPort] = useState(DEFAULT_PORT);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadLastConnection().then((last) => {
-      if (last) {
-        setHost(last.host);
-        setPort(String(last.port));
-      }
-    });
-  }, []);
 
   const handleConnect = async () => {
     const trimmedHost = host.trim();
@@ -50,11 +41,21 @@ export function ConnectScreen({ client, onConnected }: Props) {
 
     setError(null);
     setConnecting(true);
+    const client = new AgentClient();
     try {
-      const agent = await client.connect(trimmedHost, parsedPort);
-      await saveLastConnection({ host: trimmedHost, port: parsedPort });
-      onConnected(agent, trimmedHost, parsedPort);
+      const info = await client.connect(trimmedHost, parsedPort);
+      const savedAgent: SavedAgent = {
+        id: generateAgentId(),
+        name: name.trim() || info.name,
+        host: trimmedHost,
+        port: parsedPort,
+      };
+      onAdd(savedAgent, client);
+      setName("");
+      setHost("");
+      setPort(DEFAULT_PORT);
     } catch {
+      client.disconnect(); // cancel the background reconnect loop connect() started
       setError(
         "Não foi possível conectar. Verifique se o Stream Deck Agent está aberto e se o celular está na mesma rede Wi-Fi.",
       );
@@ -68,10 +69,19 @@ export function ConnectScreen({ client, onConnected }: Props) {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <Text style={styles.title}>Stream Deck</Text>
-      <Text style={styles.subtitle}>Conectar a um computador</Text>
+      <Text style={styles.title}>Adicionar computador</Text>
+      <Text style={styles.subtitle}>Ele aparece como uma nova página no carrossel</Text>
 
       <View style={styles.form}>
+        <Text style={styles.label}>Nome (opcional)</Text>
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder="Victor-PC"
+          placeholderTextColor={colors.textFaint}
+        />
+
         <Text style={styles.label}>Endereço IP</Text>
         <TextInput
           style={styles.input}
@@ -102,9 +112,9 @@ export function ConnectScreen({ client, onConnected }: Props) {
           disabled={connecting}
         >
           {connecting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.text} />
           ) : (
-            <Text style={styles.buttonText}>CONECTAR</Text>
+            <Text style={styles.buttonText}>ADICIONAR</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -124,13 +134,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "700",
     color: colors.text,
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textMuted,
     textAlign: "center",
     marginTop: 4,

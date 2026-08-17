@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,26 +11,28 @@ import {
   View,
 } from "react-native";
 import { iconFor, type AppSummary } from "@stream-deck/shared";
-import type { AgentClient, AgentInfo, ConnectionStatus } from "../services/websocketClient";
-import { colors } from "../theme";
+import type { AgentClient, ConnectionStatus } from "../services/websocketClient";
+import { colors, statusDotColor } from "../theme";
 
 type ButtonState = "idle" | "loading" | "success" | "error";
 
 interface Props {
   client: AgentClient;
-  agent: AgentInfo;
-  onDisconnect: () => void;
+  /** Locally saved label for this computer — shown immediately, independent of handshake state. */
+  displayName: string;
+  /** Long-press on the header opens rename/remove for this computer. */
+  onLongPressHeader?: () => void;
 }
 
-const STATUS_COPY: Record<ConnectionStatus, { label: string; dot: string }> = {
-  connected: { label: "Conectado", dot: colors.success },
-  connecting: { label: "Conectando...", dot: colors.purple },
-  reconnecting: { label: "Reconectando...", dot: colors.warning },
-  failed: { label: "Desconectado", dot: colors.danger },
-  disconnected: { label: "Desconectado", dot: colors.danger },
+const STATUS_LABELS: Record<ConnectionStatus, string> = {
+  connected: "Conectado",
+  connecting: "Conectando...",
+  reconnecting: "Reconectando...",
+  failed: "Desconectado",
+  disconnected: "Desconectado",
 };
 
-export function ControlScreen({ client, agent, onDisconnect }: Props) {
+export function ControlScreen({ client, displayName, onLongPressHeader }: Props) {
   const { width, height } = useWindowDimensions();
   const [apps, setApps] = useState<AppSummary[]>([]);
   const [loadingApps, setLoadingApps] = useState(true);
@@ -80,25 +83,19 @@ export function ControlScreen({ client, agent, onDisconnect }: Props) {
     }
   };
 
-  const statusCopy = STATUS_COPY[status];
-
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <Pressable style={styles.header} onLongPress={onLongPressHeader} delayLongPress={400}>
         <View style={styles.headerInfo}>
           <View style={styles.headerTitleRow}>
-            <View style={[styles.statusDot, { backgroundColor: statusCopy.dot }]} />
+            <View style={[styles.statusDot, { backgroundColor: statusDotColor(status) }]} />
             <Text style={styles.headerTitle} numberOfLines={1}>
-              {agent.name}
+              {displayName}
             </Text>
           </View>
-          <Text style={styles.headerSubtitle}>{statusCopy.label}</Text>
+          <Text style={styles.headerSubtitle}>{STATUS_LABELS[status]}</Text>
         </View>
-
-        <TouchableOpacity style={styles.disconnectButton} onPress={onDisconnect} hitSlop={8}>
-          <Text style={styles.disconnectIcon}>⏻</Text>
-        </TouchableOpacity>
-      </View>
+      </Pressable>
 
       {status === "reconnecting" && <Text style={styles.banner}>Reconectando...</Text>}
       {status === "failed" && (
@@ -215,19 +212,6 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     marginTop: 3,
     marginLeft: 16,
-  },
-  disconnectButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.dangerMuted,
-  },
-  disconnectIcon: {
-    color: colors.danger,
-    fontSize: 16,
-    fontWeight: "700",
   },
   banner: {
     textAlign: "center",

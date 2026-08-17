@@ -1,3 +1,5 @@
+import type { ConnectionStatus } from "./services/websocketClient";
+
 /**
  * Palette lifted from the "Aura Dark (Soft Text)" VS Code theme
  * (github.com/daltonmenezes/aura-theme). Aura pairs two accents rather than
@@ -27,3 +29,15 @@ export const colors = {
   danger: "#c55858",
   dangerMuted: "rgba(197, 88, 88, 0.16)",
 } as const;
+
+const STATUS_DOT_COLORS: Record<ConnectionStatus, string> = {
+  connected: colors.success,
+  connecting: colors.purple,
+  reconnecting: colors.warning,
+  failed: colors.danger,
+  disconnected: colors.danger,
+};
+
+export function statusDotColor(status: ConnectionStatus): string {
+  return STATUS_DOT_COLORS[status];
+}
