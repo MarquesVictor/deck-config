@@ -155,6 +155,12 @@ function applyAutoStart(enabled: boolean): void {
 }
 
 app.whenReady().then(async () => {
+  // On macOS the Dock icon during `npm run electron:dev` defaults to the
+  // generic Electron.app icon — it isn't derived from BrowserWindow's
+  // `icon` option (that only affects window chrome). Only a packaged build
+  // picks up app-icon.png as the actual bundle icon automatically.
+  app.dock?.setIcon(path.join(ASSETS_DIR, "app-icon.png"));
+
   agent = await bootstrapAgent();
   agentService = new AgentService(
     agent.configStore,
