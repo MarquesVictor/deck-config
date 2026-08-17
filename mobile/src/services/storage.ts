@@ -8,6 +8,8 @@ export interface SavedAgent {
   name: string;
   host: string;
   port: number;
+  /** User intentionally disconnected this one (e.g. it's turned off) — don't auto-connect/reconnect until resumed. */
+  paused?: boolean;
 }
 
 export async function loadSavedAgents(): Promise<SavedAgent[]> {

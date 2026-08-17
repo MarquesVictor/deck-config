@@ -55,7 +55,7 @@ export default function App() {
       for (const agent of agents) {
         const client = new AgentClient();
         registerClient(agent, client);
-        client.connect(agent.host, agent.port).catch(() => {});
+        if (!agent.paused) client.connect(agent.host, agent.port).catch(() => {});
       }
       setLoaded(true);
     });
@@ -90,8 +90,24 @@ export default function App() {
     persist(savedAgents.map((a) => (a.id === agent.id ? { ...a, name: trimmed } : a)));
   };
 
+  /** Disconnects/reconnects without touching the saved list — e.g. the computer is off for a while. */
+  const togglePause = (agent: SavedAgent) => {
+    const nextPaused = !agent.paused;
+    const entry = clientsRef.current.get(agent.id);
+    if (nextPaused) {
+      entry?.client.disconnect();
+    } else {
+      entry?.client.connect(agent.host, agent.port).catch(() => {});
+    }
+    persist(savedAgents.map((a) => (a.id === agent.id ? { ...a, paused: nextPaused } : a)));
+  };
+
   const handleLongPress = (agent: SavedAgent) => {
     Alert.alert(agent.name, undefined, [
+      {
+        text: agent.paused ? "Reconectar" : "Desconectar",
+        onPress: () => togglePause(agent),
+      },
       {
         text: "Renomear",
         onPress: () => {
@@ -122,7 +138,7 @@ export default function App() {
   }
 
   const pages: Page[] = [...savedAgents, { id: ADD_PAGE_ID }];
-  const dotColors = savedAgents.map((a) => statusDotColor(statuses[a.id] ?? "connecting"));
+  const dotColors = savedAgents.map((a) => (a.paused ? colors.textFaint : statusDotColor(statuses[a.id] ?? "connecting")));
 
   return (
     <View style={styles.container}>
@@ -198,7 +214,14 @@ function PageForAgent({
   const entry = clientsRef.current.get(agent.id);
   if (!entry) return <View style={styles.container} />; // one-frame gap before the initial effect registers clients
 
-  return <ControlScreen client={entry.client} displayName={agent.name} onLongPressHeader={onLongPressHeader} />;
+  return (
+    <ControlScreen
+      client={entry.client}
+      displayName={agent.name}
+      paused={agent.paused}
+      onLongPressHeader={onLongPressHeader}
+    />
+  );
 }
 
 const styles = StyleSheet.create({

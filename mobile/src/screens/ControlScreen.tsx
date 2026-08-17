@@ -20,6 +20,8 @@ interface Props {
   client: AgentClient;
   /** Locally saved label for this computer — shown immediately, independent of handshake state. */
   displayName: string;
+  /** User intentionally disconnected this one — shows "Pausado" instead of the generic disconnected label. */
+  paused?: boolean;
   /** Long-press on the header opens rename/remove for this computer. */
   onLongPressHeader?: () => void;
 }
@@ -32,7 +34,7 @@ const STATUS_LABELS: Record<ConnectionStatus, string> = {
   disconnected: "Desconectado",
 };
 
-export function ControlScreen({ client, displayName, onLongPressHeader }: Props) {
+export function ControlScreen({ client, displayName, paused, onLongPressHeader }: Props) {
   const { width, height } = useWindowDimensions();
   const [apps, setApps] = useState<AppSummary[]>([]);
   const [loadingApps, setLoadingApps] = useState(true);
@@ -88,12 +90,12 @@ export function ControlScreen({ client, displayName, onLongPressHeader }: Props)
       <Pressable style={styles.header} onLongPress={onLongPressHeader} delayLongPress={400}>
         <View style={styles.headerInfo}>
           <View style={styles.headerTitleRow}>
-            <View style={[styles.statusDot, { backgroundColor: statusDotColor(status) }]} />
+            <View style={[styles.statusDot, { backgroundColor: paused ? colors.textFaint : statusDotColor(status) }]} />
             <Text style={styles.headerTitle} numberOfLines={1}>
               {displayName}
             </Text>
           </View>
-          <Text style={styles.headerSubtitle}>{STATUS_LABELS[status]}</Text>
+          <Text style={styles.headerSubtitle}>{paused ? "Pausado" : STATUS_LABELS[status]}</Text>
         </View>
       </Pressable>
 
