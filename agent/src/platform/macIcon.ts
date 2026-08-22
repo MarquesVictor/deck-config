@@ -16,7 +16,10 @@ const ICON_SIZE_PX = 64;
  * script, then downsizes the result with `sips` (both real icons can come
  * back at 512-1024px, far bigger than needed for a button).
  */
-export async function extractMacAppIcon(targetPath: string, assetsDir: string): Promise<string | null> {
+export async function extractMacAppIcon(
+  targetPath: string,
+  assetsDir: string,
+): Promise<string | null> {
   // NSWorkspace.iconForFile never errors for a missing path — it returns a
   // generic "unknown file" icon instead — so existence has to be checked
   // ourselves to avoid treating that placeholder as a real icon.
@@ -27,7 +30,10 @@ export async function extractMacAppIcon(targetPath: string, assetsDir: string): 
   }
 
   const script = path.join(assetsDir, "extract-mac-icon.jxa.js");
-  const tmpFile = path.join(os.tmpdir(), `streamdeck-icon-${Date.now()}-${Math.random().toString(36).slice(2)}.png`);
+  const tmpFile = path.join(
+    os.tmpdir(),
+    `streamdeck-icon-${Date.now()}-${Math.random().toString(36).slice(2)}.png`,
+  );
 
   try {
     await execFileAsync("/usr/bin/osascript", ["-l", "JavaScript", script, targetPath, tmpFile]);

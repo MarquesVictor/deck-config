@@ -19,7 +19,9 @@ function parseArgs(argv: string[]): Record<string, string> {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args.name || !args.path) {
-    console.error('Usage: addApp.ts --name "TextEdit" --path "/path/to/executable" [--icon document]');
+    console.error(
+      'Usage: addApp.ts --name "TextEdit" --path "/path/to/executable" [--icon document]',
+    );
     process.exit(1);
   }
 

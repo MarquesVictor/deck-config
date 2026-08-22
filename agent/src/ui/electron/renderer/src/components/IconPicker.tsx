@@ -8,7 +8,13 @@ interface Props {
   onSelectSystemIcon: () => void;
 }
 
-export function IconPicker({ value, onChange, systemIconUrl, usingSystemIcon, onSelectSystemIcon }: Props) {
+export function IconPicker({
+  value,
+  onChange,
+  systemIconUrl,
+  usingSystemIcon,
+  onSelectSystemIcon,
+}: Props) {
   return (
     <div className="icon-grid">
       {systemIconUrl && (

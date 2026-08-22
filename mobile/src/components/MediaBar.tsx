@@ -88,7 +88,9 @@ export function MediaBar({ client, disabled }: Props) {
     // number while the request is still in flight — that gap was making the
     // thumb visibly snap back and then jump forward once the response
     // landed.
-    setVolumeState((prev) => (prev ? { ...prev, volume: rounded } : { volume: rounded, muted: false }));
+    setVolumeState((prev) =>
+      prev ? { ...prev, volume: rounded } : { volume: rounded, muted: false },
+    );
     setDragValue(null);
     if (disabled) return;
     try {
@@ -128,7 +130,11 @@ export function MediaBar({ client, disabled }: Props) {
       </View>
 
       <View style={styles.volumeRow}>
-        <TouchableOpacity onPress={pressMute} accessibilityLabel="Mudo" style={styles.iconButtonSmall}>
+        <TouchableOpacity
+          onPress={pressMute}
+          accessibilityLabel="Mudo"
+          style={styles.iconButtonSmall}
+        >
           <Ionicons
             name={volumeIcon}
             size={19}
@@ -148,7 +154,11 @@ export function MediaBar({ client, disabled }: Props) {
           maximumTrackTintColor={colors.border}
           thumbTintColor={colors.accent}
         />
-        <TouchableOpacity onPress={pressMic} accessibilityLabel="Microfone" style={styles.micButton}>
+        <TouchableOpacity
+          onPress={pressMic}
+          accessibilityLabel="Microfone"
+          style={styles.micButton}
+        >
           <Ionicons
             name={micMuted ? "mic-off" : "mic"}
             size={16}

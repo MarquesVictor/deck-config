@@ -62,7 +62,8 @@ export function AppsPage({ notify }: Props) {
     }
   };
 
-  const editingApp = editing && editing !== "new" ? apps.find((a) => a.id === editing.id) : undefined;
+  const editingApp =
+    editing && editing !== "new" ? apps.find((a) => a.id === editing.id) : undefined;
 
   const handleDragStart = (e: React.DragEvent, app: App) => {
     if (!dragAllowedRef.current) {
@@ -122,7 +123,9 @@ export function AppsPage({ notify }: Props) {
           <AppForm
             initial={editingApp}
             onCancel={() => setEditing(null)}
-            onSubmit={(input) => (editing === "new" ? handleAdd(input) : handleEdit(editingApp!.id, input))}
+            onSubmit={(input) =>
+              editing === "new" ? handleAdd(input) : handleEdit(editingApp!.id, input)
+            }
           />
         </div>
       )}
@@ -174,7 +177,11 @@ export function AppsPage({ notify }: Props) {
                 <div className="app-row-path">{app.action.path}</div>
               </div>
               <div className="app-row-actions">
-                <button className="btn btn-sm" onClick={() => handleTest(app)} disabled={testingId === app.id}>
+                <button
+                  className="btn btn-sm"
+                  onClick={() => handleTest(app)}
+                  disabled={testingId === app.id}
+                >
                   {testingId === app.id ? "Testando..." : "Testar"}
                 </button>
                 <button className="btn btn-sm" onClick={() => setEditing({ id: app.id })}>

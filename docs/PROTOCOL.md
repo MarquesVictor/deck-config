@@ -7,6 +7,7 @@ WebSocket, mensagens JSON, cada uma com um campo `type`. Definido em `shared/src
 `protocolVersion: 1` (constante `CURRENT_PROTOCOL_VERSION` em `shared/src/protocol.ts`). O Agent mantém uma lista de versões aceitas (`SUPPORTED_PROTOCOL_VERSIONS` em `agent/src/transport/websocket/server.ts`) e rejeita qualquer outra com `PROTOCOL_VERSION_MISMATCH` — hoje essa lista só tem `[1]`, mas o mecanismo já existe para aceitar múltiplas versões simultaneamente quando houver um v2.
 
 Convenção pretendida (ainda não exercida na prática, porque só existe a v1):
+
 - Breaking changes → incrementam a versão major.
 - Ações novas → versão minor, com fallback pra versão anterior.
 - Mobile em v1 falando com Agent em v2 continua em v1 até atualizar.
@@ -72,7 +73,14 @@ Sem payload. Resposta:
   "success": true,
   "data": {
     "apps": [
-      { "id": "app_cs2", "name": "Counter-Strike 2", "icon": "gamepad", "iconImage": "data:image/png;base64,...", "position": 0, "actionType": "open_app" }
+      {
+        "id": "app_cs2",
+        "name": "Counter-Strike 2",
+        "icon": "gamepad",
+        "iconImage": "data:image/png;base64,...",
+        "position": 0,
+        "actionType": "open_app"
+      }
     ]
   }
 }
@@ -107,7 +115,12 @@ Toda resposta de erro:
   "type": "response",
   "requestId": "req_abc123",
   "success": false,
-  "error": { "code": "APPLICATION_NOT_FOUND", "message": "...", "timestamp": "...", "details": "..." }
+  "error": {
+    "code": "APPLICATION_NOT_FOUND",
+    "message": "...",
+    "timestamp": "...",
+    "details": "..."
+  }
 }
 ```
 
@@ -115,19 +128,19 @@ Toda resposta de erro:
 
 Códigos definidos hoje (`ActionErrorCode`):
 
-| Código | Quando |
-|---|---|
-| `APPLICATION_NOT_FOUND` | appId desconhecido, ou o caminho configurado não existe mais em disco |
-| `APPLICATION_LAUNCH_FAILED` | `spawn()`/`open` falhou ao iniciar o processo |
-| `APPLICATION_ALREADY_RUNNING` | reservado — nenhum handler emite isso ainda |
-| `UNAUTHORIZED` | `machineId` da request não bate com o do Agent |
-| `INVALID_MACHINE_ID` | reservado — hoje um machineId errado cai em `UNAUTHORIZED`, não neste código |
-| `PROTOCOL_VERSION_MISMATCH` | `protocolVersion` da request fora da lista suportada |
-| `INVALID_ACTION` | `action` desconhecida para o `ActionRegistry` |
-| `MISSING_PAYLOAD` | reservado — validação de payload hoje é feita pelo Zod schema de cada action, que gera outro tipo de erro, não este código especificamente |
-| `VALIDATION_ERROR` | payload não passa no schema Zod da action |
-| `INTERNAL_ERROR` | qualquer exceção não mapeada — fallback genérico |
-| `TIMEOUT` | reservado — hoje o timeout é só client-side (mobile desiste depois de 10s), o Agent não emite isto |
+| Código                        | Quando                                                                                                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `APPLICATION_NOT_FOUND`       | appId desconhecido, ou o caminho configurado não existe mais em disco                                                                      |
+| `APPLICATION_LAUNCH_FAILED`   | `spawn()`/`open` falhou ao iniciar o processo                                                                                              |
+| `APPLICATION_ALREADY_RUNNING` | reservado — nenhum handler emite isso ainda                                                                                                |
+| `UNAUTHORIZED`                | `machineId` da request não bate com o do Agent                                                                                             |
+| `INVALID_MACHINE_ID`          | reservado — hoje um machineId errado cai em `UNAUTHORIZED`, não neste código                                                               |
+| `PROTOCOL_VERSION_MISMATCH`   | `protocolVersion` da request fora da lista suportada                                                                                       |
+| `INVALID_ACTION`              | `action` desconhecida para o `ActionRegistry`                                                                                              |
+| `MISSING_PAYLOAD`             | reservado — validação de payload hoje é feita pelo Zod schema de cada action, que gera outro tipo de erro, não este código especificamente |
+| `VALIDATION_ERROR`            | payload não passa no schema Zod da action                                                                                                  |
+| `INTERNAL_ERROR`              | qualquer exceção não mapeada — fallback genérico                                                                                           |
+| `TIMEOUT`                     | reservado — hoje o timeout é só client-side (mobile desiste depois de 10s), o Agent não emite isto                                         |
 
 Os códigos marcados "reservado" existem no enum porque fazem parte do vocabulário do protocolo, mas nenhum handler os produz ainda — não é um bug, é espaço já reservado para quando os casos que os disparam existirem (ex.: `TIMEOUT` quando houver ações de longa duração no Agent).
 

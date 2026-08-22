@@ -125,7 +125,9 @@ select {
   text-align: left;
   cursor: pointer;
   font-size: 13.5px;
-  transition: background-color 0.12s ease, color 0.12s ease;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
 }
 
 .nav-item:hover {
@@ -164,7 +166,9 @@ select {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 8px 20px -12px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.2),
+    0 8px 20px -12px rgba(0, 0, 0, 0.35);
 }
 
 .card + .card {
@@ -183,7 +187,9 @@ select {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px 18px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 8px 20px -12px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.2),
+    0 8px 20px -12px rgba(0, 0, 0, 0.35);
 }
 
 .stat-label {
@@ -229,7 +235,10 @@ select {
   background: var(--surface-raised);
   color: var(--text);
   border: 1px solid var(--border);
-  transition: border-color 0.12s ease, background-color 0.12s ease, opacity 0.12s ease;
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease,
+    opacity 0.12s ease;
 }
 
 .btn:hover {
@@ -411,7 +420,9 @@ select {
   border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
-  transition: border-color 0.12s ease, background-color 0.12s ease;
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease;
 }
 
 .icon-option:hover {
@@ -490,7 +501,9 @@ select {
   border: 1px solid var(--border);
   border-radius: 999px;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .switch.on {

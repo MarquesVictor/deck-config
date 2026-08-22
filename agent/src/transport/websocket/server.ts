@@ -79,7 +79,9 @@ function tryListen(port: number): Promise<WebSocketServer> {
 }
 
 function isPortInUseError(err: unknown): boolean {
-  return typeof err === "object" && err !== null && (err as { code?: string }).code === "EADDRINUSE";
+  return (
+    typeof err === "object" && err !== null && (err as { code?: string }).code === "EADDRINUSE"
+  );
 }
 
 function wireServer(
@@ -92,7 +94,9 @@ function wireServer(
   wss.on("connection", (socket, req) => {
     const clientId = randomUUID();
     connectionManager.add(clientId, socket);
-    logger.info(`New WebSocket connection from ${req.socket.remoteAddress}:${req.socket.remotePort}`);
+    logger.info(
+      `New WebSocket connection from ${req.socket.remoteAddress}:${req.socket.remotePort}`,
+    );
 
     send(socket, {
       type: "event",
@@ -153,7 +157,9 @@ async function handleMessage(
 
   const request = parsed as RequestMessage;
   const requestId = request.requestId ?? "unknown";
-  logger.info(`Request ${requestId} received: action=${request.action} payload=${JSON.stringify(request.payload)}`);
+  logger.info(
+    `Request ${requestId} received: action=${request.action} payload=${JSON.stringify(request.payload)}`,
+  );
 
   try {
     if (!SUPPORTED_PROTOCOL_VERSIONS.includes(request.protocolVersion)) {
@@ -172,7 +178,8 @@ async function handleMessage(
     send(connection.socket, { type: "response", requestId, success: true, data });
   } catch (err) {
     const error = toErrorPayload(err);
-    const detailsSuffix = error.details !== undefined ? ` | details: ${JSON.stringify(error.details)}` : "";
+    const detailsSuffix =
+      error.details !== undefined ? ` | details: ${JSON.stringify(error.details)}` : "";
     logger.error(`Request ${requestId} failed: ${error.code} - ${error.message}${detailsSuffix}`);
     send(connection.socket, { type: "response", requestId, success: false, error });
   }

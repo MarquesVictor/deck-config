@@ -52,7 +52,11 @@ describe("AgentService", () => {
     const unauthenticated = connectionManager.add("client_unauth", fakeSocket());
     unauthenticated.authenticated = false;
 
-    const app = await service.addApp({ name: "Notepad", icon: "document", path: "C:\\notepad.exe" });
+    const app = await service.addApp({
+      name: "Notepad",
+      icon: "document",
+      path: "C:\\notepad.exe",
+    });
 
     expect(app.id).toMatch(/^app_/);
     expect(app.position).toBe(0);
@@ -95,9 +99,9 @@ describe("AgentService", () => {
   });
 
   it("updateApp throws for an unknown id", async () => {
-    await expect(service.updateApp("app_missing", { name: "X", icon: "box", path: "/x" })).rejects.toThrow(
-      "App not found",
-    );
+    await expect(
+      service.updateApp("app_missing", { name: "X", icon: "box", path: "/x" }),
+    ).rejects.toThrow("App not found");
   });
 
   it("deleteApp removes the app and broadcasts the update", async () => {
@@ -152,7 +156,11 @@ describe("AgentService", () => {
 
   it("getSettings returns the persisted defaults", async () => {
     const settings = await service.getSettings();
-    expect(settings).toMatchObject({ autoStartWindows: true, startMinimized: true, showInTray: true });
+    expect(settings).toMatchObject({
+      autoStartWindows: true,
+      startMinimized: true,
+      showInTray: true,
+    });
   });
 
   it("updateSettings persists a partial patch and returns the merged result", async () => {

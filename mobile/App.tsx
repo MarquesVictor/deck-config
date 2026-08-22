@@ -138,7 +138,9 @@ export default function App() {
   }
 
   const pages: Page[] = [...savedAgents, { id: ADD_PAGE_ID }];
-  const dotColors = savedAgents.map((a) => (a.paused ? colors.textFaint : statusDotColor(statuses[a.id] ?? "connecting")));
+  const dotColors = savedAgents.map((a) =>
+    a.paused ? colors.textFaint : statusDotColor(statuses[a.id] ?? "connecting"),
+  );
 
   return (
     <View style={styles.container}>
@@ -165,7 +167,11 @@ export default function App() {
         )}
       />
 
-      <PageDots dotColors={dotColors} activeIndex={activeIndex} onAddPage={activeIndex === pages.length - 1} />
+      <PageDots
+        dotColors={dotColors}
+        activeIndex={activeIndex}
+        onAddPage={activeIndex === pages.length - 1}
+      />
 
       <Modal visible={renameTarget !== null} transparent animationType="fade">
         <View style={styles.modalBackdrop}>

@@ -41,7 +41,9 @@ async function detectMediaApp(): Promise<MediaApp | null> {
   return null;
 }
 
-async function runMediaTransportCommand(command: "playpause" | "next track" | "previous track"): Promise<void> {
+async function runMediaTransportCommand(
+  command: "playpause" | "next track" | "previous track",
+): Promise<void> {
   const app = await detectMediaApp();
   if (!app) {
     throw new Error("Nenhum app de música compatível (Spotify ou Music) está aberto.");

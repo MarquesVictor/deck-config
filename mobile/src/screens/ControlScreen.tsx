@@ -91,7 +91,12 @@ export function ControlScreen({ client, displayName, paused, onLongPressHeader }
       <Pressable style={styles.header} onLongPress={onLongPressHeader} delayLongPress={400}>
         <View style={styles.headerInfo}>
           <View style={styles.headerTitleRow}>
-            <View style={[styles.statusDot, { backgroundColor: paused ? colors.textFaint : statusDotColor(status) }]} />
+            <View
+              style={[
+                styles.statusDot,
+                { backgroundColor: paused ? colors.textFaint : statusDotColor(status) },
+              ]}
+            />
             <Text style={styles.headerTitle} numberOfLines={1}>
               {displayName}
             </Text>
@@ -115,7 +120,8 @@ export function ControlScreen({ client, displayName, paused, onLongPressHeader }
           <ActivityIndicator style={styles.loading} color={colors.accent} />
         ) : apps.length === 0 ? (
           <Text style={styles.empty}>
-            Nenhum aplicativo configurado ainda.{"\n"}Adicione um pelo Stream Deck Agent no computador.
+            Nenhum aplicativo configurado ainda.{"\n"}Adicione um pelo Stream Deck Agent no
+            computador.
           </Text>
         ) : (
           <FlatList

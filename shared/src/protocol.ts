@@ -8,7 +8,13 @@ import { ActionErrorCode } from "./errors";
  */
 export const CURRENT_PROTOCOL_VERSION = 1;
 
-export const RequestActionSchema = z.enum(["get_apps", "execute", "media_control", "get_volume", "set_volume"]);
+export const RequestActionSchema = z.enum([
+  "get_apps",
+  "execute",
+  "media_control",
+  "get_volume",
+  "set_volume",
+]);
 export type RequestAction = z.infer<typeof RequestActionSchema>;
 
 export const ExecutePayloadSchema = z.object({

@@ -1,0 +1,8 @@
+dist/
+node_modules/
+.expo/
+coverage/
+package-lock.json
+*.jxa.js
+# the user's own original spec document, not ours to reformat
+contedt.md

@@ -8,11 +8,7 @@ import {
 } from "@stream-deck/shared";
 
 export type ConnectionStatus =
-  | "disconnected"
-  | "connecting"
-  | "connected"
-  | "reconnecting"
-  | "failed";
+  "disconnected" | "connecting" | "connected" | "reconnecting" | "failed";
 
 export interface AgentInfo {
   id: string;
@@ -148,7 +144,11 @@ export class AgentClient {
             this.reconnectAttempt = 0;
             this.reconnectDeadline = null;
             this.setStatus("connected");
-            resolve({ id: message.agent.id, name: message.agent.name, version: message.agent.version });
+            resolve({
+              id: message.agent.id,
+              name: message.agent.name,
+              version: message.agent.version,
+            });
           }
           return;
         }
@@ -188,7 +188,8 @@ export class AgentClient {
       return;
     }
 
-    const delay = RECONNECT_DELAYS_MS[Math.min(this.reconnectAttempt, RECONNECT_DELAYS_MS.length - 1)]!;
+    const delay =
+      RECONNECT_DELAYS_MS[Math.min(this.reconnectAttempt, RECONNECT_DELAYS_MS.length - 1)]!;
     this.reconnectAttempt++;
     this.setStatus("reconnecting");
     this.reconnectTimer = setTimeout(() => {

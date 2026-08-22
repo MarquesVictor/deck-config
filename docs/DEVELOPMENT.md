@@ -48,6 +48,7 @@ npm run electron:dev
 Sobe três processos em paralelo (Vite servindo o renderer em `localhost:5173`, `tsc --watch` compilando o main process, e o Electron em si assim que os dois primeiros ficam prontos). Hot reload funciona tanto no renderer (Vite) quanto no main (o Electron reinicia quando o `tsc --watch` termina uma recompilação — se você editar `main.ts`/`preload.ts`, pare com Ctrl+C e rode `npm run electron:dev` de novo, já que o processo do Electron em si não se auto-recarrega).
 
 Onde o Agent guarda dados, por plataforma (`agent/src/core/persistence/paths.ts`):
+
 - Config: `%APPDATA%\StreamDeck\config.json` (Windows) ou `~/.streamdeck/config.json` (dev em macOS/Linux)
 - Logs: só console por enquanto (ainda não grava em arquivo — ver `docs/ARCHITECTURE.md`)
 

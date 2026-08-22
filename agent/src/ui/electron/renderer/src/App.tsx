@@ -30,7 +30,12 @@ export function App() {
       </nav>
 
       <main className="content">
-        {tab === "dashboard" && <DashboardPage onOpenApps={() => setTab("apps")} onOpenSettings={() => setTab("settings")} />}
+        {tab === "dashboard" && (
+          <DashboardPage
+            onOpenApps={() => setTab("apps")}
+            onOpenSettings={() => setTab("settings")}
+          />
+        )}
         {tab === "apps" && <AppsPage notify={notify} />}
         {tab === "settings" && <SettingsPage notify={notify} />}
       </main>

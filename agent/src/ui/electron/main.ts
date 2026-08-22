@@ -99,7 +99,9 @@ function registerIpcHandlers(service: AgentService): void {
   ipcMain.handle(IPC_CHANNELS.addApp, (_e, input) => service.addApp(input));
   ipcMain.handle(IPC_CHANNELS.updateApp, (_e, id: string, input) => service.updateApp(id, input));
   ipcMain.handle(IPC_CHANNELS.deleteApp, (_e, id: string) => service.deleteApp(id));
-  ipcMain.handle(IPC_CHANNELS.reorderApps, (_e, orderedIds: string[]) => service.reorderApps(orderedIds));
+  ipcMain.handle(IPC_CHANNELS.reorderApps, (_e, orderedIds: string[]) =>
+    service.reorderApps(orderedIds),
+  );
   ipcMain.handle(IPC_CHANNELS.getConnectedClients, () => service.getConnectedClients());
   ipcMain.handle(IPC_CHANNELS.getSettings, () => service.getSettings());
   ipcMain.handle(IPC_CHANNELS.getMachineInfo, () => service.getMachineInfo());

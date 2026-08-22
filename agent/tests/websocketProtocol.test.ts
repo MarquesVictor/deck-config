@@ -13,7 +13,8 @@ import { createLogger } from "../src/platform/logger";
 import { startWebSocketServer, type StartedServer } from "../src/transport/websocket/server";
 
 const MACHINE_ID = "machine_test1234";
-const HARMLESS_EXECUTABLE = process.platform === "win32" ? "C:\\Windows\\System32\\cmd.exe" : "/usr/bin/true";
+const HARMLESS_EXECUTABLE =
+  process.platform === "win32" ? "C:\\Windows\\System32\\cmd.exe" : "/usr/bin/true";
 
 async function connectAndWaitForReady(port: number): Promise<WebSocket> {
   const socket = new WebSocket(`ws://localhost:${port}`);

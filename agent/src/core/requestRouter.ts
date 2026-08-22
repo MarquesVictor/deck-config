@@ -39,9 +39,7 @@ export class RequestRouter {
 
   private async handleGetApps(): Promise<{ apps: ReturnType<typeof toAppSummary>[] }> {
     const config = await this.configStore.loadConfig();
-    const apps = [...config.apps]
-      .sort((a, b) => a.position - b.position)
-      .map(toAppSummary);
+    const apps = [...config.apps].sort((a, b) => a.position - b.position).map(toAppSummary);
     return { apps };
   }
 

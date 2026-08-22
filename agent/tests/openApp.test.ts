@@ -92,7 +92,11 @@ describe("openApp handler", () => {
 
     await createOpenAppHandler(configStore, logger)({ appId: "app_test" });
 
-    expect(spawnMock).toHaveBeenCalledWith(execPath, [], expect.objectContaining({ detached: true }));
+    expect(spawnMock).toHaveBeenCalledWith(
+      execPath,
+      [],
+      expect.objectContaining({ detached: true }),
+    );
   });
 
   it("throws APPLICATION_LAUNCH_FAILED when spawn errors", async () => {

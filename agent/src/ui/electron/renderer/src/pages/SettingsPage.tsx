@@ -6,7 +6,14 @@ interface Props {
   notify: (text: string, kind?: "success" | "error") => void;
 }
 
-const LOG_LEVELS: AgentSettings["logLevel"][] = ["trace", "debug", "info", "warn", "error", "fatal"];
+const LOG_LEVELS: AgentSettings["logLevel"][] = [
+  "trace",
+  "debug",
+  "info",
+  "warn",
+  "error",
+  "fatal",
+];
 
 export function SettingsPage({ notify }: Props) {
   const [settings, setSettings] = useState<AgentSettings | null>(null);
@@ -113,7 +120,12 @@ function SettingRow({
         <div className="settings-row-label">{label}</div>
         <div className="settings-row-desc">{desc}</div>
       </div>
-      <div className={`switch${checked ? " on" : ""}`} onClick={() => onChange(!checked)} role="switch" aria-checked={checked}>
+      <div
+        className={`switch${checked ? " on" : ""}`}
+        onClick={() => onChange(!checked)}
+        role="switch"
+        aria-checked={checked}
+      >
         <div className="switch-knob" />
       </div>
     </div>

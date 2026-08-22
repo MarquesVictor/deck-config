@@ -81,7 +81,12 @@ export function AppForm({ initial, onCancel, onSubmit }: Props) {
     <form className="form-grid" onSubmit={handleSubmit}>
       <div className="form-field">
         <label>Nome</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Counter-Strike 2" autoFocus />
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Counter-Strike 2"
+          autoFocus
+        />
       </div>
 
       <div className="form-field">
@@ -125,7 +130,9 @@ export function AppForm({ initial, onCancel, onSubmit }: Props) {
         )}
         {fetchingIcon && <p className="form-hint">Buscando ícone do aplicativo...</p>}
         {!fetchingIcon && systemIcon === null && (
-          <p className="form-hint">Nenhum ícone encontrado ainda — usando o emoji selecionado acima.</p>
+          <p className="form-hint">
+            Nenhum ícone encontrado ainda — usando o emoji selecionado acima.
+          </p>
         )}
       </div>
 

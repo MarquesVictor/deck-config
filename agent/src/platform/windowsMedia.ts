@@ -134,7 +134,12 @@ public class StreamDeckAudioEndpoint {
 
 async function runAudioEndpointScript(tail: string): Promise<string> {
   const script = `Add-Type @"\n${AUDIO_ENDPOINT_VOLUME_TYPE}\n"@\n${tail}`;
-  const { stdout } = await execFileAsync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", script]);
+  const { stdout } = await execFileAsync("powershell.exe", [
+    "-NoProfile",
+    "-NonInteractive",
+    "-Command",
+    script,
+  ]);
   return stdout.trim();
 }
 
@@ -143,7 +148,10 @@ export async function getWindowsVolume(): Promise<VolumeState> {
     '"$([StreamDeckAudioEndpoint]::GetVolumeScalar())|$([StreamDeckAudioEndpoint]::GetMuted())"',
   );
   const [volumeStr, mutedStr] = output.split("|");
-  return { volume: Math.round(Number(volumeStr) * 100), muted: mutedStr?.trim().toLowerCase() === "true" };
+  return {
+    volume: Math.round(Number(volumeStr) * 100),
+    muted: mutedStr?.trim().toLowerCase() === "true",
+  };
 }
 
 export async function setWindowsVolume(volume: number): Promise<void> {
