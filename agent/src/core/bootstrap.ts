@@ -5,6 +5,7 @@ import { JsonConfigStore } from "./persistence/jsonConfigStore";
 import { RequestRouter } from "./requestRouter";
 import { createLogger, type Logger } from "../platform/logger";
 import { localIPv4Addresses } from "../platform/network";
+import { defaultLogsDir } from "./persistence/paths";
 import { advertiseAgent, type MdnsAdvertisement } from "../transport/mdns/advertiser";
 import { startWebSocketServer, type StartedServer } from "../transport/websocket/server";
 
@@ -29,7 +30,7 @@ export interface BootstrappedAgent {
  * BrowserWindow / process lifecycle; this only owns the backend services.
  */
 export async function bootstrapAgent(): Promise<BootstrappedAgent> {
-  const logger = createLogger("info");
+  const logger = createLogger("info", defaultLogsDir());
   logger.info("Stream Deck Agent started");
 
   const configStore = new JsonConfigStore();
